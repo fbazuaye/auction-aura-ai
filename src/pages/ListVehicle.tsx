@@ -1,0 +1,399 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import Header from "@/components/Header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Car,
+  Upload,
+  DollarSign,
+  Clock,
+  Loader2,
+  ImagePlus,
+  X,
+  Sparkles,
+} from "lucide-react";
+
+const ListVehicle = () => {
+  const { user, hasRole, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const [form, setForm] = useState({
+    make: "",
+    model: "",
+    year: new Date().getFullYear(),
+    mileage: 0,
+    vin: "",
+    condition: "good",
+    location: "",
+    description: "",
+    reserve_price: 0,
+  });
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [createAuction, setCreateAuction] = useState(false);
+  const [auctionSettings, setAuctionSettings] = useState({
+    start_price: 0,
+    bid_increment: 100,
+    duration_hours: 24,
+  });
+  const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState<any>(null);
+
+  const canList = hasRole("seller") || hasRole("admin");
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (images.length + files.length > 10) {
+      toast({ title: "Maximum 10 images allowed", variant: "destructive" });
+      return;
+    }
+    setImages((prev) => [...prev, ...files]);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => setImagePreviews((prev) => [...prev, ev.target?.result as string]);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (idx: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== idx));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const runAiAnalysis = async () => {
+    if (!form.make || !form.model || !form.year) {
+      toast({ title: "Fill in make, model, and year first", variant: "destructive" });
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-vehicle", {
+        body: {
+          make: form.make,
+          model: form.model,
+          year: form.year,
+          mileage: form.mileage,
+          condition: form.condition,
+          location: form.location,
+        },
+      });
+      if (error) throw error;
+      setAiAnalysis(data);
+      toast({ title: "AI analysis complete!" });
+    } catch (err: any) {
+      toast({ title: "AI analysis failed", description: err.message, variant: "destructive" });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      // Upload images
+      const uploadedUrls: string[] = [];
+      for (const file of images) {
+        const ext = file.name.split(".").pop();
+        const filePath = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("vehicle-media")
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from("vehicle-media")
+          .getPublicUrl(filePath);
+        uploadedUrls.push(urlData.publicUrl);
+      }
+
+      // Insert vehicle
+      const { data: vehicle, error: vehicleError } = await supabase
+        .from("vehicles")
+        .insert({
+          seller_id: user.id,
+          make: form.make,
+          model: form.model,
+          year: form.year,
+          mileage: form.mileage,
+          vin: form.vin || null,
+          condition: form.condition,
+          location: form.location || null,
+          description: form.description || null,
+          reserve_price: form.reserve_price || null,
+          images: uploadedUrls,
+          status: "pending",
+          ai_market_value: aiAnalysis?.market_value || null,
+          ai_condition_score: aiAnalysis?.condition_score || null,
+          ai_repair_cost: aiAnalysis?.repair_cost || null,
+          ai_profit_potential: aiAnalysis?.profit_potential || null,
+        })
+        .select()
+        .single();
+
+      if (vehicleError) throw vehicleError;
+
+      // Create auction if enabled
+      if (createAuction && vehicle) {
+        const startsAt = new Date();
+        const endsAt = new Date(startsAt.getTime() + auctionSettings.duration_hours * 3600000);
+        const { error: auctionError } = await supabase.from("auctions").insert({
+          vehicle_id: vehicle.id,
+          start_price: auctionSettings.start_price,
+          reserve_price: form.reserve_price || null,
+          bid_increment: auctionSettings.bid_increment,
+          starts_at: startsAt.toISOString(),
+          ends_at: endsAt.toISOString(),
+          original_end_time: endsAt.toISOString(),
+          status: "active",
+        });
+        if (auctionError) throw auctionError;
+      }
+
+      toast({ title: "Vehicle listed!", description: "Your listing is pending admin approval." });
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!canList) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container py-16 text-center space-y-4">
+          <Car className="w-16 h-16 text-muted-foreground mx-auto" />
+          <h1 className="font-display font-bold text-2xl text-foreground">Seller Access Required</h1>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            You need a seller account to list vehicles. Contact an admin to get approved as a seller.
+          </p>
+          <Button variant="outline" onClick={() => navigate("/")}>Back to Home</Button>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container py-8 max-w-3xl space-y-6">
+        <div className="flex items-center gap-3">
+          <Upload className="w-7 h-7 text-primary" />
+          <h1 className="font-display font-bold text-2xl text-foreground">List a Vehicle</h1>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Vehicle Details */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Car className="w-5 h-5 text-primary" /> Vehicle Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Make *</Label>
+                <Input placeholder="Toyota" value={form.make} onChange={(e) => setForm({ ...form, make: e.target.value })} required className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>Model *</Label>
+                <Input placeholder="Camry" value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} required className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>Year *</Label>
+                <Input type="number" min={1900} max={2030} value={form.year} onChange={(e) => setForm({ ...form, year: Number(e.target.value) })} required className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>Mileage *</Label>
+                <Input type="number" min={0} placeholder="45000" value={form.mileage || ""} onChange={(e) => setForm({ ...form, mileage: Number(e.target.value) })} required className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>VIN</Label>
+                <Input placeholder="1HGBH41JXMN109186" value={form.vin} onChange={(e) => setForm({ ...form, vin: e.target.value })} className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>Condition *</Label>
+                <Select value={form.condition} onValueChange={(v) => setForm({ ...form, condition: v })}>
+                  <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="excellent">Excellent</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="fair">Fair</SelectItem>
+                    <SelectItem value="poor">Poor</SelectItem>
+                    <SelectItem value="salvage">Salvage</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Location</Label>
+                <Input placeholder="Los Angeles, CA" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>Reserve Price ($)</Label>
+                <Input type="number" min={0} placeholder="15000" value={form.reserve_price || ""} onChange={(e) => setForm({ ...form, reserve_price: Number(e.target.value) })} className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Description</Label>
+                <Textarea placeholder="Describe the vehicle condition, features, history..." value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="bg-secondary border-border min-h-[100px]" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Photos */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <ImagePlus className="w-5 h-5 text-primary" /> Photos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                {imagePreviews.map((src, i) => (
+                  <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-border">
+                    <img src={src} alt={`Upload ${i + 1}`} className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 w-6 h-6 bg-background/80 rounded-full flex items-center justify-center">
+                      <X className="w-3 h-3 text-foreground" />
+                    </button>
+                  </div>
+                ))}
+                {images.length < 10 && (
+                  <label className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                    <ImagePlus className="w-6 h-6 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground mt-1">Add</span>
+                    <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
+                  </label>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{images.length}/10 photos uploaded</p>
+            </CardContent>
+          </Card>
+
+          {/* AI Analysis */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" /> AI Vehicle Intelligence
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button type="button" variant="outline" onClick={runAiAnalysis} disabled={aiLoading} className="w-full">
+                {aiLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                {aiLoading ? "Analyzing..." : "Run AI Analysis"}
+              </Button>
+              {aiAnalysis && (
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div className="p-3 rounded-lg bg-secondary">
+                    <p className="text-xs text-muted-foreground">Market Value</p>
+                    <p className="text-lg font-display font-bold text-foreground">${aiAnalysis.market_value?.toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-secondary">
+                    <p className="text-xs text-muted-foreground">Condition Score</p>
+                    <p className="text-lg font-display font-bold text-foreground">{aiAnalysis.condition_score}/10</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-secondary">
+                    <p className="text-xs text-muted-foreground">Repair Cost</p>
+                    <p className="text-lg font-display font-bold text-foreground">${aiAnalysis.repair_cost?.toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-secondary">
+                    <p className="text-xs text-muted-foreground">Profit Potential</p>
+                    <p className="text-lg font-display font-bold text-foreground">{aiAnalysis.profit_potential}/10</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-secondary sm:col-span-2">
+                    <p className="text-xs text-muted-foreground">Recommended Bid Range</p>
+                    <p className="text-lg font-display font-bold text-foreground">
+                      ${aiAnalysis.bid_range_low?.toLocaleString()} – ${aiAnalysis.bid_range_high?.toLocaleString()}
+                    </p>
+                  </div>
+                  {aiAnalysis.summary && (
+                    <div className="p-3 rounded-lg bg-secondary sm:col-span-2">
+                      <p className="text-xs text-muted-foreground mb-1">AI Summary</p>
+                      <p className="text-sm text-foreground">{aiAnalysis.summary}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Auction Settings */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-primary" /> Auction Settings
+                </span>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="auction-toggle" className="text-sm font-normal text-muted-foreground">Create auction</Label>
+                  <Switch id="auction-toggle" checked={createAuction} onCheckedChange={setCreateAuction} />
+                </div>
+              </CardTitle>
+            </CardHeader>
+            {createAuction && (
+              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Price ($) *</Label>
+                  <Input type="number" min={0} placeholder="5000" value={auctionSettings.start_price || ""} onChange={(e) => setAuctionSettings({ ...auctionSettings, start_price: Number(e.target.value) })} required className="bg-secondary border-border" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Bid Increment ($)</Label>
+                  <Input type="number" min={1} value={auctionSettings.bid_increment} onChange={(e) => setAuctionSettings({ ...auctionSettings, bid_increment: Number(e.target.value) })} className="bg-secondary border-border" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Duration (hours)</Label>
+                  <Select value={String(auctionSettings.duration_hours)} onValueChange={(v) => setAuctionSettings({ ...auctionSettings, duration_hours: Number(v) })}>
+                    <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 hour</SelectItem>
+                      <SelectItem value="6">6 hours</SelectItem>
+                      <SelectItem value="12">12 hours</SelectItem>
+                      <SelectItem value="24">24 hours</SelectItem>
+                      <SelectItem value="48">48 hours</SelectItem>
+                      <SelectItem value="72">72 hours</SelectItem>
+                      <SelectItem value="168">7 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Submit */}
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <DollarSign className="w-5 h-5 mr-2" />}
+            {loading ? "Submitting..." : createAuction ? "List Vehicle & Start Auction" : "List Vehicle"}
+          </Button>
+        </form>
+      </main>
+    </div>
+  );
+};
+
+export default ListVehicle;

@@ -9,6 +9,7 @@ import VehicleDetail from "./pages/VehicleDetail.tsx";
 import Auth from "./pages/Auth.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import ListVehicle from "./pages/ListVehicle.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/list-vehicle" element={<ListVehicle />} />
             <Route path="/vehicle/:id" element={<VehicleDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

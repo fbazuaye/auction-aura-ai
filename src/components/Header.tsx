@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Bell, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import NotificationCenter from "@/components/NotificationCenter";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -46,9 +47,7 @@ const Header = () => {
 
           {user ? (
             <>
-              <Button variant="ghost" size="icon">
-                <Bell className="w-5 h-5" />
-              </Button>
+              <NotificationCenter />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
@@ -61,13 +60,24 @@ const Header = () => {
                     <p className="text-xs text-muted-foreground capitalize">{roles.join(", ") || "buyer"}</p>
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  {roles.includes("admin") && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <ShieldCheck className="w-4 h-4 mr-2" />
+                      Admin Panel
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()}>
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button variant="hero" size="sm" className="hidden sm:inline-flex">
+              <Button variant="hero" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/list-vehicle")}>
                 List Vehicle
               </Button>
             </>

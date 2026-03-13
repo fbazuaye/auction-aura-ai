@@ -14,6 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
+      auctions: {
+        Row: {
+          bid_increment: number
+          created_at: string
+          current_bid: number | null
+          ends_at: string
+          id: string
+          original_end_time: string | null
+          reserve_price: number | null
+          start_price: number
+          starts_at: string
+          status: string
+          updated_at: string
+          vehicle_id: string
+          winner_id: string | null
+        }
+        Insert: {
+          bid_increment?: number
+          created_at?: string
+          current_bid?: number | null
+          ends_at: string
+          id?: string
+          original_end_time?: string | null
+          reserve_price?: number | null
+          start_price: number
+          starts_at: string
+          status?: string
+          updated_at?: string
+          vehicle_id: string
+          winner_id?: string | null
+        }
+        Update: {
+          bid_increment?: number
+          created_at?: string
+          current_bid?: number | null
+          ends_at?: string
+          id?: string
+          original_end_time?: string | null
+          reserve_price?: number | null
+          start_price?: number
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          vehicle_id?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auto_bid_settings: {
+        Row: {
+          auction_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          max_bids: number
+          max_budget: number
+          strategy: string
+          user_id: string
+        }
+        Insert: {
+          auction_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_bids?: number
+          max_budget: number
+          strategy?: string
+          user_id: string
+        }
+        Update: {
+          auction_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_bids?: number
+          max_budget?: number
+          strategy?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_bid_settings_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bids: {
+        Row: {
+          amount: number
+          auction_id: string
+          bidder_id: string
+          created_at: string
+          id: string
+          is_auto_bid: boolean
+        }
+        Insert: {
+          amount: number
+          auction_id: string
+          bidder_id: string
+          created_at?: string
+          id?: string
+          is_auto_bid?: boolean
+        }
+        Update: {
+          amount?: number
+          auction_id?: string
+          bidder_id?: string
+          created_at?: string
+          id?: string
+          is_auto_bid?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -44,6 +176,35 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_vehicles: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_vehicles_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -59,6 +220,78 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          ai_condition_score: number | null
+          ai_market_value: number | null
+          ai_profit_potential: number | null
+          ai_repair_cost: number | null
+          condition: string
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          inspection_reports: string[] | null
+          location: string | null
+          make: string
+          mileage: number
+          model: string
+          reserve_price: number | null
+          seller_id: string
+          status: string
+          updated_at: string
+          videos: string[] | null
+          vin: string | null
+          year: number
+        }
+        Insert: {
+          ai_condition_score?: number | null
+          ai_market_value?: number | null
+          ai_profit_potential?: number | null
+          ai_repair_cost?: number | null
+          condition?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          inspection_reports?: string[] | null
+          location?: string | null
+          make: string
+          mileage: number
+          model: string
+          reserve_price?: number | null
+          seller_id: string
+          status?: string
+          updated_at?: string
+          videos?: string[] | null
+          vin?: string | null
+          year: number
+        }
+        Update: {
+          ai_condition_score?: number | null
+          ai_market_value?: number | null
+          ai_profit_potential?: number | null
+          ai_repair_cost?: number | null
+          condition?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          inspection_reports?: string[] | null
+          location?: string | null
+          make?: string
+          mileage?: number
+          model?: string
+          reserve_price?: number | null
+          seller_id?: string
+          status?: string
+          updated_at?: string
+          videos?: string[] | null
+          vin?: string | null
+          year?: number
         }
         Relationships: []
       }

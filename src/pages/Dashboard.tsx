@@ -127,9 +127,9 @@ const Dashboard = () => {
     if (!bid.auctions) return <Badge variant="outline">Unknown</Badge>;
     const isWinning = bid.amount === bid.auctions.current_bid;
     const ended = bid.auctions.status === "ended";
-    if (ended && isWinning) return <Badge className="bg-green-600 text-white border-0">Won</Badge>;
+    if (ended && isWinning) return <Badge className="bg-success text-success-foreground border-0">Won</Badge>;
     if (ended) return <Badge variant="outline">Lost</Badge>;
-    if (isWinning) return <Badge className="bg-green-600/20 text-green-400 border-green-600/30">Winning</Badge>;
+    if (isWinning) return <Badge className="bg-success/20 text-success border-success/30">Winning</Badge>;
     return <Badge variant="destructive">Outbid</Badge>;
   };
 

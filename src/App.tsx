@@ -9,6 +9,7 @@ import VehicleDetail from "./pages/VehicleDetail.tsx";
 import Auth from "./pages/Auth.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import ListVehicle from "./pages/ListVehicle.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();

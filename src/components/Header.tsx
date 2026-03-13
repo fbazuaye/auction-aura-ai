@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Bell, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import NotificationCenter from "@/components/NotificationCenter";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";

@@ -18,7 +18,7 @@ interface Notification {
   message: string;
   read: boolean;
   created_at: string;
-  data: Record<string, any>;
+  data: any;
 }
 
 const NotificationCenter = () => {

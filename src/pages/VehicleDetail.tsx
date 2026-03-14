@@ -113,12 +113,20 @@ const VehicleDetail = () => {
               </div>
 
               <div className="space-y-2">
-                <Button variant="bid" size="lg" className="w-full text-lg">
-                  Bid {formatPrice(nextBid)}
+                <Button
+                  variant="bid"
+                  size="lg"
+                  className="w-full text-lg"
+                  onClick={() => {
+                    const { user } = require("@/contexts/AuthContext");
+                    navigate("/auth");
+                  }}
+                >
+                  Bid {formatPrice(nextBid + bidAmount)}
                 </Button>
                 <div className="grid grid-cols-3 gap-2">
                   {[500, 1000, 2000].map((inc) => (
-                    <Button key={inc} variant="outline" size="sm" className="text-xs">
+                    <Button key={inc} variant="outline" size="sm" className="text-xs" onClick={() => setBidAmount(prev => prev + inc)}>
                       +{formatPrice(inc)}
                     </Button>
                   ))}

@@ -24,6 +24,30 @@ serve(async (req) => {
 
     const { action, auction_id, max_budget, strategy, max_bids } = await req.json();
 
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (auction_id && !uuidRegex.test(auction_id)) {
+      return new Response(JSON.stringify({ error: "Invalid auction ID format" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check subscription
+    const { data: subscription } = await supabase
+      .from("auto_bid_subscriptions")
+      .select("id, status")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (!subscription) {
+      return new Response(JSON.stringify({ error: "Auto-bid requires an active subscription", requires_subscription: true }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (action === "configure") {
       // Upsert auto-bid settings
       const { data: existing } = await supabase

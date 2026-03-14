@@ -3,8 +3,8 @@ import { Home, Search, Gavel, LayoutDashboard } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
-  { to: "/search", icon: Search, label: "Search" },
-  { to: "/bids", icon: Gavel, label: "My Bids" },
+  { to: "/#search", icon: Search, label: "Search" },
+  { to: "/dashboard", icon: Gavel, label: "My Bids" },
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
 ];
 

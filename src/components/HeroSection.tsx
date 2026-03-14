@@ -26,10 +26,10 @@ const HeroSection = () => {
             Search, analyze, and bid on vehicles globally. Let AI find the best deals and bid for you.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Button variant="hero" size="xl">
+            <Button variant="hero" size="xl" onClick={() => navigate("/auth")}>
               Start Bidding
             </Button>
-            <Button variant="outline" size="xl">
+            <Button variant="outline" size="xl" onClick={() => navigate("/list-vehicle")}>
               List Your Vehicle
             </Button>
           </div>

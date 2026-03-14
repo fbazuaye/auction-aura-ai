@@ -172,6 +172,7 @@ const VehicleDetail = () => {
         </div>
       </main>
 
+      <Footer />
       <BottomNav />
     </div>
   );

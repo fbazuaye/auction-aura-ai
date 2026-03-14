@@ -80,6 +80,7 @@ const Index = () => {
         </section>
       </main>
 
+      <Footer />
       <BottomNav />
     </div>
   );

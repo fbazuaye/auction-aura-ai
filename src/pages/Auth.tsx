@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, User, ArrowRight, Car } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Car, ShoppingCart, Store } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,6 +14,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [accountType, setAccountType] = useState<"buyer" | "seller">("buyer");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -31,7 +32,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            data: { full_name: fullName },
+            data: { full_name: fullName, requested_role: accountType },
             emailRedirectTo: window.location.origin,
           },
         });
@@ -119,8 +120,40 @@ const Auth = () => {
         {/* Email Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+            <>
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <Label>I want to...</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setAccountType("buyer")}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                      accountType === "buyer"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-secondary text-muted-foreground hover:border-muted-foreground"
+                    }`}
+                  >
+                    <ShoppingCart className="w-6 h-6" />
+                    <span className="text-sm font-medium">Buy Vehicles</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAccountType("seller")}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                      accountType === "seller"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-secondary text-muted-foreground hover:border-muted-foreground"
+                    }`}
+                  >
+                    <Store className="w-6 h-6" />
+                    <span className="text-sm font-medium">Buy & Sell</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -132,7 +165,8 @@ const Auth = () => {
                   required
                 />
               </div>
-            </div>
+              </div>
+            </>
           )}
 
           <div className="space-y-2">

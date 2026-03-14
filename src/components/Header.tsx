@@ -77,9 +77,11 @@ const Header = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button variant="hero" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/list-vehicle")}>
-                List Vehicle
-              </Button>
+              {(roles.includes("seller") || roles.includes("admin")) && (
+                <Button variant="hero" size="sm" className="hidden sm:inline-flex" onClick={() => navigate("/list-vehicle")}>
+                  List Vehicle
+                </Button>
+              )}
             </>
           ) : (
             <Button variant="hero" size="sm" onClick={() => navigate("/auth")}>

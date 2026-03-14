@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import heroCar from "@/assets/hero-car.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative overflow-hidden">
       {/* Background */}

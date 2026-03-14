@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import HeroSection from "@/components/HeroSection";
@@ -26,9 +27,9 @@ const Index = () => {
               <h2 className="font-display font-bold text-xl text-foreground">Live Auctions</h2>
               <Badge variant="live">● LIVE</Badge>
             </div>
-            <a href="/search" className="text-sm text-primary hover:underline font-medium">
+            <Link to="/dashboard" className="text-sm text-primary hover:underline font-medium">
               View All →
-            </a>
+            </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {mockVehicles

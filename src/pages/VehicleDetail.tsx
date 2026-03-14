@@ -1,4 +1,5 @@
-import { useParams, Link } from "react-router-dom";
+import { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
@@ -10,9 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { mockVehicles } from "@/data/mockVehicles";
 
 const VehicleDetail = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const vehicle = mockVehicles.find((v) => v.id === id);
-
+  const [bidAmount, setBidAmount] = useState(0);
   if (!vehicle) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -111,12 +113,17 @@ const VehicleDetail = () => {
               </div>
 
               <div className="space-y-2">
-                <Button variant="bid" size="lg" className="w-full text-lg">
-                  Bid {formatPrice(nextBid)}
+                <Button
+                  variant="bid"
+                  size="lg"
+                  className="w-full text-lg"
+                  onClick={() => navigate("/auth")}
+                >
+                  Bid {formatPrice(nextBid + bidAmount)}
                 </Button>
                 <div className="grid grid-cols-3 gap-2">
                   {[500, 1000, 2000].map((inc) => (
-                    <Button key={inc} variant="outline" size="sm" className="text-xs">
+                    <Button key={inc} variant="outline" size="sm" className="text-xs" onClick={() => setBidAmount(prev => prev + inc)}>
                       +{formatPrice(inc)}
                     </Button>
                   ))}

@@ -1,8 +1,11 @@
 import { Zap, TrendingUp, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import heroCar from "@/assets/hero-car.jpg";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative overflow-hidden">
       {/* Background */}
@@ -23,10 +26,10 @@ const HeroSection = () => {
             Search, analyze, and bid on vehicles globally. Let AI find the best deals and bid for you.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Button variant="hero" size="xl">
+            <Button variant="hero" size="xl" onClick={() => navigate("/auth")}>
               Start Bidding
             </Button>
-            <Button variant="outline" size="xl">
+            <Button variant="outline" size="xl" onClick={() => navigate("/list-vehicle")}>
               List Your Vehicle
             </Button>
           </div>

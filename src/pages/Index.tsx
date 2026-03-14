@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import HeroSection from "@/components/HeroSection";
+import Footer from "@/components/Footer";
 import VehicleCard from "@/components/VehicleCard";
 import SmartSearch from "@/components/SmartSearch";
 import { mockVehicles } from "@/data/mockVehicles";

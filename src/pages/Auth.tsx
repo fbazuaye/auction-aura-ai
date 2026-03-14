@@ -14,6 +14,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [accountType, setAccountType] = useState<"buyer" | "seller">("buyer");
   const navigate = useNavigate();
   const { toast } = useToast();
 

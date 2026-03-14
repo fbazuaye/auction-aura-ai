@@ -1,8 +1,10 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign, Bot } from "lucide-react";
+import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import AuctionTimer from "@/components/AuctionTimer";
+import AutoBidPanel from "@/components/AutoBidPanel";
+import DamageDetection from "@/components/DamageDetection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockVehicles } from "@/data/mockVehicles";
@@ -121,20 +123,8 @@ const VehicleDetail = () => {
                 </div>
               </div>
 
-              {/* Auto-bid toggle */}
-              <div className="p-3 rounded-lg bg-secondary/50 border border-primary/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <Bot className="w-4 h-4 text-primary" />
-                  <span className="font-display font-semibold text-sm text-foreground">AI Auto-Bid</span>
-                  <Badge variant="ai" className="ml-auto">Beta</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Let AI bid on your behalf. Set your max budget and strategy.
-                </p>
-                <Button variant="outline" size="sm" className="mt-2 w-full">
-                  Enable Auto-Bid
-                </Button>
-              </div>
+              {/* Auto-bid panel */}
+              <AutoBidPanel auctionId={vehicle.id} currentBid={vehicle.currentBid} bidIncrement={500} />
             </div>
 
             {/* AI Insights Panel */}
@@ -164,6 +154,11 @@ const VehicleDetail = () => {
               <p className="text-[10px] text-muted-foreground">
                 Powered by AutoBidX AI • Analysis based on market data and vehicle condition
               </p>
+            </div>
+
+            {/* Damage Detection */}
+            <div className="p-5 rounded-lg bg-card border border-primary/20">
+              <DamageDetection />
             </div>
           </div>
         </div>

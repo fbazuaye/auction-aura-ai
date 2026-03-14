@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import HeroSection from "@/components/HeroSection";
 import VehicleCard from "@/components/VehicleCard";
+import SmartSearch from "@/components/SmartSearch";
 import { mockVehicles } from "@/data/mockVehicles";
 import { Badge } from "@/components/ui/badge";
 import { Flame, Clock, Star } from "lucide-react";
@@ -13,6 +14,10 @@ const Index = () => {
       <HeroSection />
 
       <main className="container py-8 space-y-8">
+        {/* Smart Search */}
+        <section className="p-5 rounded-lg bg-card border border-border">
+          <SmartSearch />
+        </section>
         {/* Section: Live Auctions */}
         <section>
           <div className="flex items-center justify-between mb-4">

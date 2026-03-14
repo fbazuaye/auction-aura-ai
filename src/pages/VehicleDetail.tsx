@@ -6,6 +6,7 @@ import BottomNav from "@/components/BottomNav";
 import AuctionTimer from "@/components/AuctionTimer";
 import AutoBidPanel from "@/components/AutoBidPanel";
 import DamageDetection from "@/components/DamageDetection";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockVehicles } from "@/data/mockVehicles";
@@ -171,6 +172,7 @@ const VehicleDetail = () => {
         </div>
       </main>
 
+      <Footer />
       <BottomNav />
     </div>
   );

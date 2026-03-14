@@ -1,8 +1,10 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign, Bot } from "lucide-react";
+import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import AuctionTimer from "@/components/AuctionTimer";
+import AutoBidPanel from "@/components/AutoBidPanel";
+import DamageDetection from "@/components/DamageDetection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { mockVehicles } from "@/data/mockVehicles";

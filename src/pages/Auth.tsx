@@ -32,7 +32,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            data: { full_name: fullName },
+            data: { full_name: fullName, requested_role: accountType },
             emailRedirectTo: window.location.origin,
           },
         });

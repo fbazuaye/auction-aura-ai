@@ -117,10 +117,7 @@ const VehicleDetail = () => {
                   variant="bid"
                   size="lg"
                   className="w-full text-lg"
-                  onClick={() => {
-                    const { user } = require("@/contexts/AuthContext");
-                    navigate("/auth");
-                  }}
+                  onClick={() => navigate("/auth")}
                 >
                   Bid {formatPrice(nextBid + bidAmount)}
                 </Button>

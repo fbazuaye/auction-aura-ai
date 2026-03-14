@@ -155,6 +155,11 @@ const VehicleDetail = () => {
                 Powered by AutoBidX AI • Analysis based on market data and vehicle condition
               </p>
             </div>
+
+            {/* Damage Detection */}
+            <div className="p-5 rounded-lg bg-card border border-primary/20">
+              <DamageDetection />
+            </div>
           </div>
         </div>
       </main>

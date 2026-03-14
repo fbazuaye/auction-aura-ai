@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Bot, Zap, DollarSign, Target, TrendingDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bot, Zap, DollarSign, Target, TrendingDown, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,10 +23,58 @@ const AutoBidPanel = ({ auctionId, currentBid, bidIncrement }: AutoBidPanelProps
   const [maxBids, setMaxBids] = useState("10");
   const [loading, setLoading] = useState(false);
   const [lastResult, setLastResult] = useState<string | null>(null);
+  const [hasSubscription, setHasSubscription] = useState<boolean | null>(null);
+  const [subscribing, setSubscribing] = useState(false);
+
+  // Check if user has active subscription
+  useEffect(() => {
+    if (!user) {
+      setHasSubscription(false);
+      return;
+    }
+    const checkSub = async () => {
+      const { data } = await supabase
+        .from("auto_bid_subscriptions")
+        .select("id, status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+      setHasSubscription(!!data);
+    };
+    checkSub();
+  }, [user]);
+
+  // Check if auctionId is a valid UUID (mock data won't be)
+  const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(auctionId);
+
+  const handleSubscribe = async () => {
+    if (!user) {
+      toast({ title: "Sign in required", description: "Please sign in to subscribe", variant: "destructive" });
+      return;
+    }
+    setSubscribing(true);
+    try {
+      // Mock subscription — in production this would go through a payment gateway
+      const { error } = await supabase
+        .from("auto_bid_subscriptions")
+        .insert({ user_id: user.id, plan: "premium", price: 9.99, status: "active" });
+      if (error) throw error;
+      setHasSubscription(true);
+      toast({ title: "Subscribed!", description: "AI Auto-Bid is now active on your account" });
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   const handleConfigure = async () => {
     if (!user) {
       toast({ title: "Sign in required", description: "Please sign in to use auto-bidding", variant: "destructive" });
+      return;
+    }
+    if (!isValidUUID) {
+      toast({ title: "Demo mode", description: "Auto-bid works only with live auctions", variant: "destructive" });
       return;
     }
     const budget = parseFloat(maxBudget);
@@ -86,13 +134,76 @@ const AutoBidPanel = ({ auctionId, currentBid, bidIncrement }: AutoBidPanelProps
     }
   };
 
+  // Subscription gate
+  if (hasSubscription === null) {
+    return (
+      <div className="p-4 rounded-lg bg-secondary/50 border border-primary/10 space-y-3">
+        <div className="flex items-center gap-2">
+          <Bot className="w-4 h-4 text-primary" />
+          <span className="font-display font-semibold text-sm text-foreground">AI Auto-Bid</span>
+        </div>
+        <p className="text-xs text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!hasSubscription) {
+    return (
+      <div className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-accent/10 border border-primary/20 space-y-3">
+        <div className="flex items-center gap-2">
+          <Crown className="w-4 h-4 text-primary" />
+          <span className="font-display font-semibold text-sm text-foreground">AI Auto-Bid</span>
+          <Badge variant="outline" className="ml-auto text-[10px] border-primary/30 text-primary">
+            <Sparkles className="w-3 h-3 mr-1" /> Premium
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Let AI bid on your behalf with smart strategies. Set your budget and let the algorithm find the best deals.
+        </p>
+        <div className="bg-background/60 rounded-md p-3 space-y-1.5">
+          <div className="flex items-center gap-2 text-xs text-foreground">
+            <Zap className="w-3 h-3 text-primary" /> AI-powered bid decisions
+          </div>
+          <div className="flex items-center gap-2 text-xs text-foreground">
+            <Target className="w-3 h-3 text-primary" /> 3 strategies: Conservative, Moderate, Aggressive
+          </div>
+          <div className="flex items-center gap-2 text-xs text-foreground">
+            <DollarSign className="w-3 h-3 text-primary" /> Budget protection & bid limits
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-lg font-bold text-foreground">$9.99</span>
+            <span className="text-xs text-muted-foreground">/month</span>
+          </div>
+          <Button
+            size="sm"
+            className="bg-primary hover:bg-primary/90"
+            onClick={handleSubscribe}
+            disabled={subscribing || !user}
+          >
+            {subscribing ? "Activating..." : !user ? "Sign in first" : "Subscribe Now"}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 rounded-lg bg-secondary/50 border border-primary/10 space-y-3">
       <div className="flex items-center gap-2">
         <Bot className="w-4 h-4 text-primary" />
         <span className="font-display font-semibold text-sm text-foreground">AI Auto-Bid</span>
-        <Badge variant="ai" className="ml-auto">Beta</Badge>
+        <Badge variant="outline" className="ml-auto text-[10px] border-primary/30 text-primary">
+          <Crown className="w-3 h-3 mr-1" /> Subscribed
+        </Badge>
       </div>
+
+      {!isValidUUID && (
+        <p className="text-xs text-muted-foreground bg-accent/10 p-2 rounded">
+          ⚡ Auto-bid is available on live auctions only. This is a demo listing.
+        </p>
+      )}
 
       {!enabled ? (
         <div className="space-y-3">
@@ -136,7 +247,13 @@ const AutoBidPanel = ({ auctionId, currentBid, bidIncrement }: AutoBidPanelProps
               />
             </div>
           </div>
-          <Button variant="outline" size="sm" className="w-full" onClick={handleConfigure} disabled={loading}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={handleConfigure}
+            disabled={loading || !isValidUUID}
+          >
             {loading ? "Setting up..." : "Enable Auto-Bid"}
           </Button>
         </div>

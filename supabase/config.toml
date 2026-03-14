@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.notify]
 verify_jwt = false
+
+[functions.auto-bid]
+verify_jwt = false
+
+[functions.detect-damage]
+verify_jwt = false
+
+[functions.smart-search]
+verify_jwt = false

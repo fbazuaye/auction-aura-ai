@@ -62,6 +62,24 @@ const ResetPassword = () => {
     }
   };
 
+  if (linkError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6 text-destructive" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">Reset link expired</h2>
+          <p className="text-muted-foreground text-sm">{linkError}</p>
+          <p className="text-muted-foreground text-sm">Please request a new password reset link.</p>
+          <Button onClick={() => navigate("/auth")} variant="outline">
+            Go back to sign in
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!isRecovery) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">

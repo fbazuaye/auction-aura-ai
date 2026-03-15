@@ -43,21 +43,66 @@ function dbToVehicle(row: any): Vehicle {
 const Index = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
+  const dbVehiclesRef = useRef<Vehicle[]>([]);
+
+  const fetchVehicles = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("vehicles")
+      .select("*, auctions(*, bids(count))")
+      .eq("status", "approved");
+
+    const dbVehicles = (!error && data) ? data.map(dbToVehicle) : [];
+    dbVehiclesRef.current = dbVehicles;
+    setVehicles([...dbVehicles, ...mockVehicles]);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    const fetchVehicles = async () => {
-      const { data, error } = await supabase
-        .from("vehicles")
-        .select("*, auctions(*, bids(count))")
-        .eq("status", "approved");
-
-      const dbVehicles = (!error && data) ? data.map(dbToVehicle) : [];
-      // Always include mock data, plus any real DB vehicles
-      setVehicles([...dbVehicles, ...mockVehicles]);
-      setLoading(false);
-    };
     fetchVehicles();
-  }, []);
+
+    // Subscribe to realtime auction updates (bid amount, end time changes)
+    const channel = supabase
+      .channel("homepage-realtime")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "auctions" },
+        (payload) => {
+          const updated = payload.new as any;
+          setVehicles((prev) =>
+            prev.map((v) => {
+              // Match by checking if this vehicle's auction was updated
+              const isMatch =
+                dbVehiclesRef.current.some(
+                  (dbV) => dbV.id === v.id
+                ) && v.id !== undefined;
+
+              // We need to re-fetch to get accurate joined data
+              // But for instant UI update, patch current_bid and ends_at
+              if (isMatch) {
+                // Find if this auction belongs to this vehicle by refetching
+                return v;
+              }
+              return v;
+            })
+          );
+          // Re-fetch to get accurate joined data
+          fetchVehicles();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "bids" },
+        () => {
+          // A new bid was placed — re-fetch to update bid counts and current bids
+          fetchVehicles();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchVehicles]);
 
   const liveVehicles = vehicles.filter((v) => v.isLive);
   const endingSoon = [...vehicles]

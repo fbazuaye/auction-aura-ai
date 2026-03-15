@@ -48,7 +48,7 @@ const Index = () => {
     const fetchVehicles = async () => {
       const { data, error } = await supabase
         .from("vehicles")
-        .select("*, auctions(*), bid_count:bids(count)")
+        .select("*, auctions(*, bids(count))")
         .eq("status", "approved");
 
       if (error || !data || data.length === 0) {

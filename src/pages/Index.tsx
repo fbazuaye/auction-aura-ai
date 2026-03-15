@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 function dbToVehicle(row: any): Vehicle {
   const auction = Array.isArray(row.auctions) ? row.auctions[0] : row.auctions;
-  const bidCount = row.bid_count?.[0]?.count ?? 0;
+  const bidCount = auction?.bids?.[0]?.count ?? 0;
   const isLive = auction?.status === "active" && new Date(auction.ends_at) > new Date();
 
   return {
@@ -48,7 +48,7 @@ const Index = () => {
     const fetchVehicles = async () => {
       const { data, error } = await supabase
         .from("vehicles")
-        .select("*, auctions(*), bid_count:bids(count)")
+        .select("*, auctions(*, bids(count))")
         .eq("status", "approved");
 
       if (error || !data || data.length === 0) {

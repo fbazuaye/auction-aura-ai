@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign } from "lucide-react";
 import Header from "@/components/Header";
@@ -9,13 +9,107 @@ import DamageDetection from "@/components/DamageDetection";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockVehicles } from "@/data/mockVehicles";
+import { Skeleton } from "@/components/ui/skeleton";
+import { mockVehicles, Vehicle } from "@/data/mockVehicles";
+import { supabase } from "@/integrations/supabase/client";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+function dbToVehicle(v: any): Vehicle {
+  const auction = v.auctions?.[0];
+  const bidCount = auction?.bids?.[0]?.count ?? 0;
+  const firstImage = v.images?.[0]
+    ? (v.images[0].startsWith("http") ? v.images[0] : `${SUPABASE_URL}/storage/v1/object/public/vehicle-media/${v.images[0]}`)
+    : "/placeholder.svg";
+
+  return {
+    id: v.id,
+    make: v.make,
+    model: v.model,
+    year: v.year,
+    mileage: v.mileage,
+    vin: v.vin ?? "",
+    condition: (v.condition?.charAt(0).toUpperCase() + v.condition?.slice(1)) as Vehicle["condition"],
+    location: v.location ?? "Unknown",
+    image: firstImage,
+    currentBid: auction?.current_bid ?? auction?.start_price ?? 0,
+    startPrice: auction?.start_price ?? 0,
+    reservePrice: auction?.reserve_price ?? v.reserve_price ?? 0,
+    bidCount,
+    auctionEndsAt: auction ? new Date(auction.ends_at) : new Date(),
+    isLive: auction?.status === "active",
+    aiScore: v.ai_condition_score ?? 0,
+    estimatedValue: v.ai_market_value ?? 0,
+    repairCost: v.ai_repair_cost ?? 0,
+    profitPotential: v.ai_profit_potential ?? 0,
+  };
+}
 
 const VehicleDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const vehicle = mockVehicles.find((v) => v.id === id);
+  const [vehicle, setVehicle] = useState<Vehicle | null | undefined>(undefined); // undefined = loading
   const [bidAmount, setBidAmount] = useState(0);
+
+  const fetchFromDb = useCallback(async () => {
+    if (!id) return;
+    const { data } = await supabase
+      .from("vehicles")
+      .select("*, auctions(*, bids(count))")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (data) {
+      setVehicle(dbToVehicle(data));
+    } else {
+      setVehicle(null);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    // Try mock first
+    const mock = mockVehicles.find((v) => v.id === id);
+    if (mock) {
+      setVehicle(mock);
+      return;
+    }
+    // Fetch from DB
+    fetchFromDb();
+  }, [id, fetchFromDb]);
+
+  // Realtime subscription for DB vehicles
+  useEffect(() => {
+    if (!id || mockVehicles.some((v) => v.id === id)) return;
+
+    const channel = supabase
+      .channel(`vehicle-detail-${id}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "auctions" }, (payload) => {
+        if ((payload.new as any).vehicle_id === id) fetchFromDb();
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "bids" }, () => {
+        fetchFromDb();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [id, fetchFromDb]);
+
+  if (vehicle === undefined) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container py-8 space-y-4">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-[400px] w-full rounded-lg" />
+          <div className="grid grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   if (!vehicle) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

@@ -12,11 +12,19 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    
+    const error = hashParams.get("error_description");
+    if (error) {
+      setLinkError(error.replace(/\+/g, " "));
+      return;
+    }
+
     if (hashParams.get("type") === "recovery") {
       setIsRecovery(true);
     }

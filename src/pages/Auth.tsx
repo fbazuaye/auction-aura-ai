@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, User, ArrowRight, Car, ShoppingCart, Store } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Car, ShoppingCart, Store, ArrowLeft } from "lucide-react";
+
+type AuthView = "login" | "signup" | "forgot";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [view, setView] = useState<AuthView>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -23,11 +25,11 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (view === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         navigate("/");
-      } else {
+      } else if (view === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -41,6 +43,16 @@ const Auth = () => {
           title: "Check your email",
           description: "We sent you a verification link to complete signup.",
         });
+      } else if (view === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast({
+          title: "Reset link sent",
+          description: "Check your email for a password reset link.",
+        });
+        setView("login");
       }
     } catch (error: any) {
       toast({
@@ -71,10 +83,64 @@ const Auth = () => {
     }
   };
 
+  if (view === "forgot") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <div className="inline-flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+                <Car className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <span className="font-display font-bold text-2xl text-foreground">
+                AutoBidX <span className="text-primary">AI</span>
+              </span>
+            </div>
+            <h1 className="text-xl font-display font-semibold text-foreground">Reset your password</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Enter your email and we'll send you a reset link
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-11 bg-secondary border-border"
+                  required
+                />
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full h-11" disabled={loading}>
+              {loading ? "Please wait..." : "Send Reset Link"}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-muted-foreground">
+            <button
+              onClick={() => setView("login")}
+              className="text-primary hover:underline font-medium inline-flex items-center gap-1"
+            >
+              <ArrowLeft className="w-3 h-3" /> Back to sign in
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
-        {/* Logo */}
         <div className="text-center">
           <div className="inline-flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
@@ -85,14 +151,13 @@ const Auth = () => {
             </span>
           </div>
           <h1 className="text-xl font-display font-semibold text-foreground">
-            {isLogin ? "Welcome back" : "Create your account"}
+            {view === "login" ? "Welcome back" : "Create your account"}
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {isLogin ? "Sign in to continue bidding" : "Join the AI-powered auction marketplace"}
+            {view === "login" ? "Sign in to continue bidding" : "Join the AI-powered auction marketplace"}
           </p>
         </div>
 
-        {/* Google Login */}
         <Button
           variant="outline"
           className="w-full h-12 text-sm font-medium gap-3"
@@ -117,11 +182,9 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* Email Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
+          {view === "signup" && (
             <>
-              {/* Role Selection */}
               <div className="space-y-2">
                 <Label>I want to...</Label>
                 <div className="grid grid-cols-2 gap-3">
@@ -154,17 +217,17 @@ const Auth = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="name"
-                  placeholder="John Doe"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="pl-10 h-11 bg-secondary border-border"
-                  required
-                />
-              </div>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    placeholder="John Doe"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="pl-10 h-11 bg-secondary border-border"
+                    required
+                  />
+                </div>
               </div>
             </>
           )}
@@ -186,7 +249,18 @@ const Auth = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              {view === "login" && (
+                <button
+                  type="button"
+                  onClick={() => setView("forgot")}
+                  className="text-xs text-primary hover:underline font-medium"
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -203,18 +277,18 @@ const Auth = () => {
           </div>
 
           <Button type="submit" className="w-full h-11" disabled={loading}>
-            {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
+            {loading ? "Please wait..." : view === "login" ? "Sign In" : "Create Account"}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+          {view === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => setView(view === "login" ? "signup" : "login")}
             className="text-primary hover:underline font-medium"
           >
-            {isLogin ? "Sign up" : "Sign in"}
+            {view === "login" ? "Sign up" : "Sign in"}
           </button>
         </p>
       </div>

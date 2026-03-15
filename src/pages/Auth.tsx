@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Lock, User, ArrowRight, Car, ShoppingCart, Store } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Car, ShoppingCart, Store, ArrowLeft } from "lucide-react";
+
+type AuthView = "login" | "signup" | "forgot";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [view, setView] = useState<AuthView>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");

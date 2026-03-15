@@ -51,11 +51,9 @@ const Index = () => {
         .select("*, auctions(*, bids(count))")
         .eq("status", "approved");
 
-      if (error || !data || data.length === 0) {
-        setVehicles(mockVehicles);
-      } else {
-        setVehicles(data.map(dbToVehicle));
-      }
+      const dbVehicles = (!error && data) ? data.map(dbToVehicle) : [];
+      // Always include mock data, plus any real DB vehicles
+      setVehicles([...dbVehicles, ...mockVehicles]);
       setLoading(false);
     };
     fetchVehicles();

@@ -12,11 +12,19 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    
+    const error = hashParams.get("error_description");
+    if (error) {
+      setLinkError(error.replace(/\+/g, " "));
+      return;
+    }
+
     if (hashParams.get("type") === "recovery") {
       setIsRecovery(true);
     }
@@ -53,6 +61,24 @@ const ResetPassword = () => {
       setLoading(false);
     }
   };
+
+  if (linkError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center space-y-4 max-w-md">
+          <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6 text-destructive" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">Reset link expired</h2>
+          <p className="text-muted-foreground text-sm">{linkError}</p>
+          <p className="text-muted-foreground text-sm">Please request a new password reset link.</p>
+          <Button onClick={() => navigate("/auth")} variant="outline">
+            Go back to sign in
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!isRecovery) {
     return (

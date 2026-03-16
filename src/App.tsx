@@ -31,6 +31,9 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/list-vehicle" element={<ListVehicle />} />
+            <Route path="/dealer" element={<DealerDashboard />} />
+            <Route path="/dealer/bulk-upload" element={<BulkUpload />} />
+            <Route path="/dealer/analytics" element={<DealerAnalytics />} />
             <Route path="/vehicle/:id" element={<VehicleDetail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

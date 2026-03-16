@@ -64,6 +64,12 @@ const Header = () => {
                     <LayoutDashboard className="w-4 h-4 mr-2" />
                     Dashboard
                   </DropdownMenuItem>
+                  {roles.includes("seller") && (
+                    <DropdownMenuItem onClick={() => navigate("/dealer")}>
+                      <Store className="w-4 h-4 mr-2" />
+                      Dealer Dashboard
+                    </DropdownMenuItem>
+                  )}
                   {roles.includes("admin") && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
                       <ShieldCheck className="w-4 h-4 mr-2" />

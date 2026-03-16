@@ -10,6 +10,9 @@ import Auth from "./pages/Auth.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import ListVehicle from "./pages/ListVehicle.tsx";
+import DealerDashboard from "./pages/DealerDashboard.tsx";
+import BulkUpload from "./pages/BulkUpload.tsx";
+import DealerAnalytics from "./pages/DealerAnalytics.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -28,6 +31,9 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/list-vehicle" element={<ListVehicle />} />
+            <Route path="/dealer" element={<DealerDashboard />} />
+            <Route path="/dealer/bulk-upload" element={<BulkUpload />} />
+            <Route path="/dealer/analytics" element={<DealerAnalytics />} />
             <Route path="/vehicle/:id" element={<VehicleDetail />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

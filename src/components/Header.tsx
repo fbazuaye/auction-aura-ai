@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Search, User, LogOut, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { Search, User, LogOut, LayoutDashboard, ShieldCheck, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/NotificationCenter";
 import { Input } from "@/components/ui/input";
@@ -64,6 +64,12 @@ const Header = () => {
                     <LayoutDashboard className="w-4 h-4 mr-2" />
                     Dashboard
                   </DropdownMenuItem>
+                  {roles.includes("seller") && (
+                    <DropdownMenuItem onClick={() => navigate("/dealer")}>
+                      <Store className="w-4 h-4 mr-2" />
+                      Dealer Dashboard
+                    </DropdownMenuItem>
+                  )}
                   {roles.includes("admin") && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
                       <ShieldCheck className="w-4 h-4 mr-2" />

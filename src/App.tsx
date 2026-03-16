@@ -10,6 +10,9 @@ import Auth from "./pages/Auth.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import ListVehicle from "./pages/ListVehicle.tsx";
+import DealerDashboard from "./pages/DealerDashboard.tsx";
+import BulkUpload from "./pages/BulkUpload.tsx";
+import DealerAnalytics from "./pages/DealerAnalytics.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 

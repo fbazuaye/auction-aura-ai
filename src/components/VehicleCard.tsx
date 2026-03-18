@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin, Gauge, Zap } from "lucide-react";
+import { MapPin, Gauge, Zap, Video } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AuctionTimer from "./AuctionTimer";
 import type { Vehicle } from "@/data/mockVehicles";

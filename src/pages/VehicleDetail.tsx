@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-function dbToVehicle(v: any): Vehicle {
+function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: string } {
   const auction = v.auctions?.[0];
   const bidCount = auction?.bids?.[0]?.count ?? 0;
   const firstImage = v.images?.[0]
@@ -42,6 +42,8 @@ function dbToVehicle(v: any): Vehicle {
     estimatedValue: v.ai_market_value ?? 0,
     repairCost: v.ai_repair_cost ?? 0,
     profitPotential: v.ai_profit_potential ?? 0,
+    videos: v.videos ?? [],
+    live_stream_url: auction?.live_stream_url ?? null,
   };
 }
 

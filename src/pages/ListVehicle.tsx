@@ -454,6 +454,11 @@ const ListVehicle = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2 sm:col-span-3">
+                  <Label>Live Stream URL (optional)</Label>
+                  <Input placeholder="https://youtube.com/live/... or https://twitch.tv/..." value={auctionSettings.live_stream_url} onChange={(e) => setAuctionSettings({ ...auctionSettings, live_stream_url: e.target.value })} className="bg-secondary border-border" />
+                  <p className="text-xs text-muted-foreground">Paste a YouTube Live or Twitch stream URL to embed a live video feed during the auction</p>
+                </div>
               </CardContent>
             )}
           </Card>

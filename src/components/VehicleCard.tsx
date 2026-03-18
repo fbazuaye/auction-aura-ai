@@ -33,6 +33,13 @@ const VehicleCard = ({ vehicle }: VehicleCardProps) => {
             AI {vehicle.aiScore}
           </Badge>
         </div>
+        {(vehicle as any).videos?.length > 0 && (
+          <div className="absolute bottom-2 left-2">
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+              <Video className="w-3 h-3 mr-0.5" /> Video
+            </Badge>
+          </div>
+        )}
         <div className="absolute bottom-2 right-2">
           <AuctionTimer endsAt={vehicle.auctionEndsAt} />
         </div>

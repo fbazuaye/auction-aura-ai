@@ -71,6 +71,8 @@ const AdminDashboard = () => {
   const [auctions, setAuctions] = useState<AuctionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [editingStreamUrl, setEditingStreamUrl] = useState<string | null>(null);
+  const [streamUrlValue, setStreamUrlValue] = useState("");
   const [stats, setStats] = useState({ totalUsers: 0, totalVehicles: 0, activeAuctions: 0, totalBids: 0 });
 
   useEffect(() => {

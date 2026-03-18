@@ -47,11 +47,14 @@ const ListVehicle = () => {
   });
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videos, setVideos] = useState<File[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [createAuction, setCreateAuction] = useState(false);
   const [auctionSettings, setAuctionSettings] = useState({
     start_price: 0,
     bid_increment: 100,
     duration_hours: 24,
+    live_stream_url: "",
   });
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);

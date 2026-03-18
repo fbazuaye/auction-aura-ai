@@ -261,6 +261,14 @@ const AdminDashboard = () => {
                               {new Date(v.created_at).toLocaleDateString()}
                             </TableCell>
                             <TableCell className="text-right space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => navigate(`/edit-vehicle/${v.id}`)}
+                              >
+                                <Pencil className="w-3 h-3 mr-1" />
+                                Edit
+                              </Button>
                               {v.status === "pending" && (
                                 <>
                                   <Button

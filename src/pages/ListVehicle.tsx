@@ -153,6 +153,21 @@ const ListVehicle = () => {
         uploadedUrls.push(urlData.publicUrl);
       }
 
+      // Upload videos
+      const uploadedVideoUrls: string[] = [];
+      for (const file of videos) {
+        const ext = file.name.split(".").pop();
+        const filePath = `${user.id}/videos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("vehicle-media")
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from("vehicle-media")
+          .getPublicUrl(filePath);
+        uploadedVideoUrls.push(urlData.publicUrl);
+      }
+
       // Insert vehicle
       const { data: vehicle, error: vehicleError } = await supabase
         .from("vehicles")

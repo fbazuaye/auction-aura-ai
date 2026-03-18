@@ -26,6 +26,7 @@ import {
   ImagePlus,
   X,
   Sparkles,
+  Video,
 } from "lucide-react";
 
 const ListVehicle = () => {

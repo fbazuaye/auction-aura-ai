@@ -100,6 +100,28 @@ const ListVehicle = () => {
       });
       setExistingImageUrls(data.images || []);
       setExistingVideoUrls(data.videos || []);
+
+      // Fetch existing auction data
+      const { data: auctionData } = await supabase
+        .from("auctions")
+        .select("*")
+        .eq("vehicle_id", editId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (auctionData) {
+        setCreateAuction(true);
+        const durationMs = new Date(auctionData.ends_at).getTime() - new Date(auctionData.starts_at).getTime();
+        const durationHours = Math.round(durationMs / 3600000);
+        setAuctionSettings({
+          start_price: Number(auctionData.start_price) || 0,
+          bid_increment: Number(auctionData.bid_increment) || 100,
+          duration_hours: durationHours || 24,
+          live_stream_url: auctionData.live_stream_url || "",
+        });
+      }
+
       setFetchingVehicle(false);
     };
     fetchVehicle();

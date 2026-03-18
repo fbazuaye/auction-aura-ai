@@ -54,6 +54,7 @@ interface AuctionRow {
   status: string;
   starts_at: string;
   ends_at: string;
+  live_stream_url: string | null;
   vehicles: { make: string; model: string; year: number } | null;
 }
 

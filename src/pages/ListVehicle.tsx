@@ -208,7 +208,8 @@ const ListVehicle = () => {
           ends_at: endsAt.toISOString(),
           original_end_time: endsAt.toISOString(),
           status: "active",
-        });
+          live_stream_url: auctionSettings.live_stream_url || null,
+        } as any);
         if (auctionError) throw auctionError;
       }
 

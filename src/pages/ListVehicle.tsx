@@ -183,6 +183,7 @@ const ListVehicle = () => {
           description: form.description || null,
           reserve_price: form.reserve_price || null,
           images: uploadedUrls,
+          videos: uploadedVideoUrls,
           status: "pending",
           ai_market_value: aiAnalysis?.market_value || null,
           ai_condition_score: aiAnalysis?.condition_score || null,

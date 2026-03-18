@@ -21,6 +21,7 @@ export type Database = {
           current_bid: number | null
           ends_at: string
           id: string
+          live_stream_url: string | null
           original_end_time: string | null
           reserve_price: number | null
           start_price: number
@@ -36,6 +37,7 @@ export type Database = {
           current_bid?: number | null
           ends_at: string
           id?: string
+          live_stream_url?: string | null
           original_end_time?: string | null
           reserve_price?: number | null
           start_price: number
@@ -51,6 +53,7 @@ export type Database = {
           current_bid?: number | null
           ends_at?: string
           id?: string
+          live_stream_url?: string | null
           original_end_time?: string | null
           reserve_price?: number | null
           start_price?: number

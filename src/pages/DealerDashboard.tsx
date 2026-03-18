@@ -26,6 +26,7 @@ import {
   BarChart3,
   Trash2,
   Eye,
+  Pencil,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -277,6 +278,9 @@ const DealerDashboard = () => {
                         <TableCell className="text-right space-x-1">
                           <Button variant="ghost" size="icon" onClick={() => navigate(`/vehicle/${v.id}`)}>
                             <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => navigate(`/edit-vehicle/${v.id}`)}>
+                            <Pencil className="w-4 h-4" />
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => handleDeleteVehicle(v.id)}>
                             <Trash2 className="w-4 h-4 text-destructive" />

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 
 const ListVehicle = () => {
+  const { id: editId } = useParams<{ id: string }>();
+  const isEditMode = Boolean(editId);
   const { user, hasRole, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -47,8 +49,10 @@ const ListVehicle = () => {
   });
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
   const [videos, setVideos] = useState<File[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+  const [existingVideoUrls, setExistingVideoUrls] = useState<string[]>([]);
   const [createAuction, setCreateAuction] = useState(false);
   const [auctionSettings, setAuctionSettings] = useState({
     start_price: 0,
@@ -57,14 +61,54 @@ const ListVehicle = () => {
     live_stream_url: "",
   });
   const [loading, setLoading] = useState(false);
+  const [fetchingVehicle, setFetchingVehicle] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<any>(null);
 
   const canList = hasRole("seller") || hasRole("admin");
 
+  // Fetch existing vehicle data in edit mode
+  useEffect(() => {
+    if (!editId || !user) return;
+    const fetchVehicle = async () => {
+      setFetchingVehicle(true);
+      const { data, error } = await supabase
+        .from("vehicles")
+        .select("*")
+        .eq("id", editId)
+        .single();
+      if (error || !data) {
+        toast({ title: "Vehicle not found", variant: "destructive" });
+        navigate("/dealer");
+        return;
+      }
+      if (data.seller_id !== user.id && !hasRole("admin")) {
+        toast({ title: "Not authorized to edit this vehicle", variant: "destructive" });
+        navigate("/dealer");
+        return;
+      }
+      setForm({
+        make: data.make,
+        model: data.model,
+        year: data.year,
+        mileage: data.mileage,
+        vin: data.vin || "",
+        condition: data.condition,
+        location: data.location || "",
+        description: data.description || "",
+        reserve_price: data.reserve_price ? Number(data.reserve_price) : 0,
+      });
+      setExistingImageUrls(data.images || []);
+      setExistingVideoUrls(data.videos || []);
+      setFetchingVehicle(false);
+    };
+    fetchVehicle();
+  }, [editId, user]);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (images.length + files.length > 10) {
+    const totalImages = existingImageUrls.length + images.length + files.length;
+    if (totalImages > 10) {
       toast({ title: "Maximum 10 images allowed", variant: "destructive" });
       return;
     }
@@ -81,9 +125,14 @@ const ListVehicle = () => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const removeExistingImage = (idx: number) => {
+    setExistingImageUrls((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (videos.length + files.length > 3) {
+    const totalVideos = existingVideoUrls.length + videos.length + files.length;
+    if (totalVideos > 3) {
       toast({ title: "Maximum 3 videos allowed", variant: "destructive" });
       return;
     }
@@ -103,6 +152,10 @@ const ListVehicle = () => {
     URL.revokeObjectURL(videoPreviews[idx]);
     setVideos((prev) => prev.filter((_, i) => i !== idx));
     setVideoPreviews((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeExistingVideo = (idx: number) => {
+    setExistingVideoUrls((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const runAiAnalysis = async () => {
@@ -138,7 +191,7 @@ const ListVehicle = () => {
     setLoading(true);
 
     try {
-      // Upload images
+      // Upload new images
       const uploadedUrls: string[] = [];
       for (const file of images) {
         const ext = file.name.split(".").pop();
@@ -153,7 +206,7 @@ const ListVehicle = () => {
         uploadedUrls.push(urlData.publicUrl);
       }
 
-      // Upload videos
+      // Upload new videos
       const uploadedVideoUrls: string[] = [];
       for (const file of videos) {
         const ext = file.name.split(".").pop();
@@ -168,53 +221,71 @@ const ListVehicle = () => {
         uploadedVideoUrls.push(urlData.publicUrl);
       }
 
-      // Insert vehicle
-      const { data: vehicle, error: vehicleError } = await supabase
-        .from("vehicles")
-        .insert({
-          seller_id: user.id,
-          make: form.make,
-          model: form.model,
-          year: form.year,
-          mileage: form.mileage,
-          vin: form.vin || null,
-          condition: form.condition,
-          location: form.location || null,
-          description: form.description || null,
-          reserve_price: form.reserve_price || null,
-          images: uploadedUrls,
-          videos: uploadedVideoUrls,
-          status: "pending",
-          ai_market_value: aiAnalysis?.market_value || null,
-          ai_condition_score: aiAnalysis?.condition_score || null,
-          ai_repair_cost: aiAnalysis?.repair_cost || null,
-          ai_profit_potential: aiAnalysis?.profit_potential || null,
-        })
-        .select()
-        .single();
+      const allImages = [...existingImageUrls, ...uploadedUrls];
+      const allVideos = [...existingVideoUrls, ...uploadedVideoUrls];
 
-      if (vehicleError) throw vehicleError;
+      const vehicleData = {
+        make: form.make,
+        model: form.model,
+        year: form.year,
+        mileage: form.mileage,
+        vin: form.vin || null,
+        condition: form.condition,
+        location: form.location || null,
+        description: form.description || null,
+        reserve_price: form.reserve_price || null,
+        images: allImages,
+        videos: allVideos,
+        ai_market_value: aiAnalysis?.market_value || null,
+        ai_condition_score: aiAnalysis?.condition_score || null,
+        ai_repair_cost: aiAnalysis?.repair_cost || null,
+        ai_profit_potential: aiAnalysis?.profit_potential || null,
+      };
 
-      // Create auction if enabled
-      if (createAuction && vehicle) {
-        const startsAt = new Date();
-        const endsAt = new Date(startsAt.getTime() + auctionSettings.duration_hours * 3600000);
-        const { error: auctionError } = await supabase.from("auctions").insert({
-          vehicle_id: vehicle.id,
-          start_price: auctionSettings.start_price,
-          reserve_price: form.reserve_price || null,
-          bid_increment: auctionSettings.bid_increment,
-          starts_at: startsAt.toISOString(),
-          ends_at: endsAt.toISOString(),
-          original_end_time: endsAt.toISOString(),
-          status: "active",
-          live_stream_url: auctionSettings.live_stream_url || null,
-        } as any);
-        if (auctionError) throw auctionError;
+      if (isEditMode && editId) {
+        // Update existing vehicle
+        const { error: updateError } = await supabase
+          .from("vehicles")
+          .update(vehicleData)
+          .eq("id", editId);
+        if (updateError) throw updateError;
+        toast({ title: "Vehicle updated!", description: "Your listing has been updated successfully." });
+        navigate(`/vehicle/${editId}`);
+      } else {
+        // Insert new vehicle
+        const { data: vehicle, error: vehicleError } = await supabase
+          .from("vehicles")
+          .insert({
+            ...vehicleData,
+            seller_id: user.id,
+            status: "pending",
+          })
+          .select()
+          .single();
+
+        if (vehicleError) throw vehicleError;
+
+        // Create auction if enabled
+        if (createAuction && vehicle) {
+          const startsAt = new Date();
+          const endsAt = new Date(startsAt.getTime() + auctionSettings.duration_hours * 3600000);
+          const { error: auctionError } = await supabase.from("auctions").insert({
+            vehicle_id: vehicle.id,
+            start_price: auctionSettings.start_price,
+            reserve_price: form.reserve_price || null,
+            bid_increment: auctionSettings.bid_increment,
+            starts_at: startsAt.toISOString(),
+            ends_at: endsAt.toISOString(),
+            original_end_time: endsAt.toISOString(),
+            status: "active",
+            live_stream_url: auctionSettings.live_stream_url || null,
+          } as any);
+          if (auctionError) throw auctionError;
+        }
+
+        toast({ title: "Vehicle listed!", description: "Your listing is pending admin approval." });
+        navigate("/dashboard");
       }
-
-      toast({ title: "Vehicle listed!", description: "Your listing is pending admin approval." });
-      navigate("/dashboard");
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -222,7 +293,7 @@ const ListVehicle = () => {
     }
   };
 
-  if (authLoading) {
+  if (authLoading || fetchingVehicle) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -246,13 +317,18 @@ const ListVehicle = () => {
     );
   }
 
+  const totalImages = existingImageUrls.length + images.length;
+  const totalVideos = existingVideoUrls.length + videos.length;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container py-8 max-w-3xl space-y-6">
         <div className="flex items-center gap-3">
           <Upload className="w-7 h-7 text-primary" />
-          <h1 className="font-display font-bold text-2xl text-foreground">List a Vehicle</h1>
+          <h1 className="font-display font-bold text-2xl text-foreground">
+            {isEditMode ? "Edit Vehicle" : "List a Vehicle"}
+          </h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -321,15 +397,23 @@ const ListVehicle = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                {existingImageUrls.map((src, i) => (
+                  <div key={`existing-${i}`} className="relative aspect-square rounded-lg overflow-hidden border border-border">
+                    <img src={src} alt={`Existing ${i + 1}`} className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => removeExistingImage(i)} className="absolute top-1 right-1 w-6 h-6 bg-background/80 rounded-full flex items-center justify-center">
+                      <X className="w-3 h-3 text-foreground" />
+                    </button>
+                  </div>
+                ))}
                 {imagePreviews.map((src, i) => (
-                  <div key={i} className="relative aspect-square rounded-lg overflow-hidden border border-border">
+                  <div key={`new-${i}`} className="relative aspect-square rounded-lg overflow-hidden border border-border">
                     <img src={src} alt={`Upload ${i + 1}`} className="w-full h-full object-cover" />
                     <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 w-6 h-6 bg-background/80 rounded-full flex items-center justify-center">
                       <X className="w-3 h-3 text-foreground" />
                     </button>
                   </div>
                 ))}
-                {images.length < 10 && (
+                {totalImages < 10 && (
                   <label className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
                     <ImagePlus className="w-6 h-6 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground mt-1">Add</span>
@@ -337,7 +421,7 @@ const ListVehicle = () => {
                   </label>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">{images.length}/10 photos uploaded</p>
+              <p className="text-xs text-muted-foreground">{totalImages}/10 photos</p>
             </CardContent>
           </Card>
 
@@ -350,15 +434,23 @@ const ListVehicle = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {existingVideoUrls.map((src, i) => (
+                  <div key={`existing-v-${i}`} className="relative rounded-lg overflow-hidden border border-border">
+                    <video src={src} className="w-full aspect-video object-cover" controls />
+                    <button type="button" onClick={() => removeExistingVideo(i)} className="absolute top-1 right-1 w-6 h-6 bg-background/80 rounded-full flex items-center justify-center">
+                      <X className="w-3 h-3 text-foreground" />
+                    </button>
+                  </div>
+                ))}
                 {videoPreviews.map((src, i) => (
-                  <div key={i} className="relative rounded-lg overflow-hidden border border-border">
+                  <div key={`new-v-${i}`} className="relative rounded-lg overflow-hidden border border-border">
                     <video src={src} className="w-full aspect-video object-cover" />
                     <button type="button" onClick={() => removeVideo(i)} className="absolute top-1 right-1 w-6 h-6 bg-background/80 rounded-full flex items-center justify-center">
                       <X className="w-3 h-3 text-foreground" />
                     </button>
                   </div>
                 ))}
-                {videos.length < 3 && (
+                {totalVideos < 3 && (
                   <label className="aspect-video rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
                     <Video className="w-6 h-6 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground mt-1">Add Video</span>
@@ -366,7 +458,7 @@ const ListVehicle = () => {
                   </label>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">{videos.length}/3 videos uploaded (max 100MB each, mp4/webm)</p>
+              <p className="text-xs text-muted-foreground">{totalVideos}/3 videos (max 100MB each, mp4/webm)</p>
             </CardContent>
           </Card>
 
@@ -416,57 +508,65 @@ const ListVehicle = () => {
             </CardContent>
           </Card>
 
-          {/* Auction Settings */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="font-display text-lg flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-primary" /> Auction Settings
-                </span>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="auction-toggle" className="text-sm font-normal text-muted-foreground">Create auction</Label>
-                  <Switch id="auction-toggle" checked={createAuction} onCheckedChange={setCreateAuction} />
-                </div>
-              </CardTitle>
-            </CardHeader>
-            {createAuction && (
-              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Start Price ($) *</Label>
-                  <Input type="number" min={0} placeholder="5000" value={auctionSettings.start_price || ""} onChange={(e) => setAuctionSettings({ ...auctionSettings, start_price: Number(e.target.value) })} required className="bg-secondary border-border" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Bid Increment ($)</Label>
-                  <Input type="number" min={1} value={auctionSettings.bid_increment} onChange={(e) => setAuctionSettings({ ...auctionSettings, bid_increment: Number(e.target.value) })} className="bg-secondary border-border" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Duration (hours)</Label>
-                  <Select value={String(auctionSettings.duration_hours)} onValueChange={(v) => setAuctionSettings({ ...auctionSettings, duration_hours: Number(v) })}>
-                    <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 hour</SelectItem>
-                      <SelectItem value="6">6 hours</SelectItem>
-                      <SelectItem value="12">12 hours</SelectItem>
-                      <SelectItem value="24">24 hours</SelectItem>
-                      <SelectItem value="48">48 hours</SelectItem>
-                      <SelectItem value="72">72 hours</SelectItem>
-                      <SelectItem value="168">7 days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2 sm:col-span-3">
-                  <Label>Live Stream URL (optional)</Label>
-                  <Input placeholder="https://youtube.com/live/... or https://twitch.tv/..." value={auctionSettings.live_stream_url} onChange={(e) => setAuctionSettings({ ...auctionSettings, live_stream_url: e.target.value })} className="bg-secondary border-border" />
-                  <p className="text-xs text-muted-foreground">Paste a YouTube Live or Twitch stream URL to embed a live video feed during the auction</p>
-                </div>
-              </CardContent>
-            )}
-          </Card>
+          {/* Auction Settings - only in create mode */}
+          {!isEditMode && (
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="font-display text-lg flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-primary" /> Auction Settings
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="auction-toggle" className="text-sm font-normal text-muted-foreground">Create auction</Label>
+                    <Switch id="auction-toggle" checked={createAuction} onCheckedChange={setCreateAuction} />
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              {createAuction && (
+                <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Start Price ($) *</Label>
+                    <Input type="number" min={0} placeholder="5000" value={auctionSettings.start_price || ""} onChange={(e) => setAuctionSettings({ ...auctionSettings, start_price: Number(e.target.value) })} required className="bg-secondary border-border" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Bid Increment ($)</Label>
+                    <Input type="number" min={1} value={auctionSettings.bid_increment} onChange={(e) => setAuctionSettings({ ...auctionSettings, bid_increment: Number(e.target.value) })} className="bg-secondary border-border" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Duration (hours)</Label>
+                    <Select value={String(auctionSettings.duration_hours)} onValueChange={(v) => setAuctionSettings({ ...auctionSettings, duration_hours: Number(v) })}>
+                      <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 hour</SelectItem>
+                        <SelectItem value="6">6 hours</SelectItem>
+                        <SelectItem value="12">12 hours</SelectItem>
+                        <SelectItem value="24">24 hours</SelectItem>
+                        <SelectItem value="48">48 hours</SelectItem>
+                        <SelectItem value="72">72 hours</SelectItem>
+                        <SelectItem value="168">7 days</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2 sm:col-span-3">
+                    <Label>Live Stream URL (optional)</Label>
+                    <Input placeholder="https://youtube.com/live/... or https://twitch.tv/..." value={auctionSettings.live_stream_url} onChange={(e) => setAuctionSettings({ ...auctionSettings, live_stream_url: e.target.value })} className="bg-secondary border-border" />
+                    <p className="text-xs text-muted-foreground">Paste a YouTube Live or Twitch stream URL to embed a live video feed during the auction</p>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          )}
 
           {/* Submit */}
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <DollarSign className="w-5 h-5 mr-2" />}
-            {loading ? "Submitting..." : createAuction ? "List Vehicle & Start Auction" : "List Vehicle"}
+            {loading
+              ? "Submitting..."
+              : isEditMode
+                ? "Update Vehicle"
+                : createAuction
+                  ? "List Vehicle & Start Auction"
+                  : "List Vehicle"}
           </Button>
         </form>
       </main>

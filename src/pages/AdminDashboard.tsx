@@ -97,7 +97,7 @@ const AdminDashboard = () => {
           .order("created_at", { ascending: false }),
         supabase
           .from("auctions")
-          .select("id, start_price, current_bid, status, starts_at, ends_at, vehicles(make, model, year)")
+          .select("id, start_price, current_bid, status, starts_at, ends_at, live_stream_url, vehicles(make, model, year)")
           .order("created_at", { ascending: false }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("vehicles").select("id", { count: "exact", head: true }),

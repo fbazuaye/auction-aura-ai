@@ -341,7 +341,35 @@ const ListVehicle = () => {
             </CardContent>
           </Card>
 
-          {/* AI Analysis */}
+          {/* Videos */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Video className="w-5 h-5 text-primary" /> Videos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {videoPreviews.map((src, i) => (
+                  <div key={i} className="relative rounded-lg overflow-hidden border border-border">
+                    <video src={src} className="w-full aspect-video object-cover" />
+                    <button type="button" onClick={() => removeVideo(i)} className="absolute top-1 right-1 w-6 h-6 bg-background/80 rounded-full flex items-center justify-center">
+                      <X className="w-3 h-3 text-foreground" />
+                    </button>
+                  </div>
+                ))}
+                {videos.length < 3 && (
+                  <label className="aspect-video rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                    <Video className="w-6 h-6 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground mt-1">Add Video</span>
+                    <input type="file" accept="video/mp4,video/webm" multiple onChange={handleVideoUpload} className="hidden" />
+                  </label>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">{videos.length}/3 videos uploaded (max 100MB each, mp4/webm)</p>
+            </CardContent>
+          </Card>
+
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="font-display text-lg flex items-center gap-2">

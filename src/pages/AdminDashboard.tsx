@@ -396,6 +396,7 @@ const AdminDashboard = () => {
                           <TableHead>Status</TableHead>
                           <TableHead>Start Price</TableHead>
                           <TableHead>Current Bid</TableHead>
+                          <TableHead>Live Stream URL</TableHead>
                           <TableHead>Starts</TableHead>
                           <TableHead>Ends</TableHead>
                         </TableRow>
@@ -412,6 +413,49 @@ const AdminDashboard = () => {
                             </TableCell>
                             <TableCell className="text-foreground font-medium">
                               {a.current_bid ? `$${a.current_bid.toLocaleString()}` : "No bids"}
+                            </TableCell>
+                            <TableCell>
+                              {editingStreamUrl === a.id ? (
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    value={streamUrlValue}
+                                    onChange={(e) => setStreamUrlValue(e.target.value)}
+                                    placeholder="https://..."
+                                    className="h-7 text-xs w-48"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="h-7 px-2"
+                                    onClick={() => saveStreamUrl(a.id)}
+                                    disabled={actionLoading === a.id}
+                                  >
+                                    {actionLoading === a.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 px-2"
+                                    onClick={() => setEditingStreamUrl(null)}
+                                  >
+                                    <XCircle className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                                    {a.live_stream_url || "—"}
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 px-1"
+                                    onClick={() => startEditStreamUrl(a)}
+                                  >
+                                    <Pencil className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell className="text-muted-foreground text-xs">
                               {new Date(a.starts_at).toLocaleDateString()}

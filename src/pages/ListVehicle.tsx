@@ -530,54 +530,54 @@ const ListVehicle = () => {
             </CardContent>
           </Card>
 
-          {/* Auction Settings - only in create mode */}
-          {!isEditMode && (
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="font-display text-lg flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-primary" /> Auction Settings
-                  </span>
+          {/* Auction Settings */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-primary" /> Auction Settings
+                </span>
+                {!isEditMode && (
                   <div className="flex items-center gap-2">
                     <Label htmlFor="auction-toggle" className="text-sm font-normal text-muted-foreground">Create auction</Label>
                     <Switch id="auction-toggle" checked={createAuction} onCheckedChange={setCreateAuction} />
                   </div>
-                </CardTitle>
-              </CardHeader>
-              {createAuction && (
-                <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Start Price ($) *</Label>
-                    <Input type="number" min={0} placeholder="5000" value={auctionSettings.start_price || ""} onChange={(e) => setAuctionSettings({ ...auctionSettings, start_price: Number(e.target.value) })} required className="bg-secondary border-border" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Bid Increment ($)</Label>
-                    <Input type="number" min={1} value={auctionSettings.bid_increment} onChange={(e) => setAuctionSettings({ ...auctionSettings, bid_increment: Number(e.target.value) })} className="bg-secondary border-border" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Duration (hours)</Label>
-                    <Select value={String(auctionSettings.duration_hours)} onValueChange={(v) => setAuctionSettings({ ...auctionSettings, duration_hours: Number(v) })}>
-                      <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 hour</SelectItem>
-                        <SelectItem value="6">6 hours</SelectItem>
-                        <SelectItem value="12">12 hours</SelectItem>
-                        <SelectItem value="24">24 hours</SelectItem>
-                        <SelectItem value="48">48 hours</SelectItem>
-                        <SelectItem value="72">72 hours</SelectItem>
-                        <SelectItem value="168">7 days</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2 sm:col-span-3">
-                    <Label>Live Stream URL (optional)</Label>
-                    <Input placeholder="https://youtube.com/live/... or https://twitch.tv/..." value={auctionSettings.live_stream_url} onChange={(e) => setAuctionSettings({ ...auctionSettings, live_stream_url: e.target.value })} className="bg-secondary border-border" />
-                    <p className="text-xs text-muted-foreground">Paste a YouTube Live or Twitch stream URL to embed a live video feed during the auction</p>
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-          )}
+                )}
+              </CardTitle>
+            </CardHeader>
+            {(createAuction || isEditMode) && (
+              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Price ($) *</Label>
+                  <Input type="number" min={0} placeholder="5000" value={auctionSettings.start_price || ""} onChange={(e) => setAuctionSettings({ ...auctionSettings, start_price: Number(e.target.value) })} required className="bg-secondary border-border" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Bid Increment ($)</Label>
+                  <Input type="number" min={1} value={auctionSettings.bid_increment} onChange={(e) => setAuctionSettings({ ...auctionSettings, bid_increment: Number(e.target.value) })} className="bg-secondary border-border" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Duration (hours)</Label>
+                  <Select value={String(auctionSettings.duration_hours)} onValueChange={(v) => setAuctionSettings({ ...auctionSettings, duration_hours: Number(v) })}>
+                    <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 hour</SelectItem>
+                      <SelectItem value="6">6 hours</SelectItem>
+                      <SelectItem value="12">12 hours</SelectItem>
+                      <SelectItem value="24">24 hours</SelectItem>
+                      <SelectItem value="48">48 hours</SelectItem>
+                      <SelectItem value="72">72 hours</SelectItem>
+                      <SelectItem value="168">7 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 sm:col-span-3">
+                  <Label>Live Stream URL (optional)</Label>
+                  <Input placeholder="https://youtube.com/live/... or https://twitch.tv/..." value={auctionSettings.live_stream_url} onChange={(e) => setAuctionSettings({ ...auctionSettings, live_stream_url: e.target.value })} className="bg-secondary border-border" />
+                  <p className="text-xs text-muted-foreground">Paste a YouTube Live or Twitch stream URL to embed a live video feed during the auction</p>
+                </div>
+              </CardContent>
+            )}
+          </Card>
 
           {/* Submit */}
           <Button type="submit" size="lg" className="w-full" disabled={loading}>

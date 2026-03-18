@@ -149,6 +149,45 @@ const VehicleDetail = () => {
               )}
             </div>
 
+            {/* Live Stream */}
+            {vehicle.isLive && vehicle.live_stream_url && (
+              <div className="rounded-lg overflow-hidden border border-primary/30 bg-card">
+                <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 border-b border-border">
+                  <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                  <span className="text-sm font-semibold text-foreground">Live Stream</span>
+                </div>
+                <div className="aspect-video">
+                  <iframe
+                    src={vehicle.live_stream_url.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Live Stream"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Uploaded Videos */}
+            {vehicle.videos && vehicle.videos.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                  <Video className="w-4 h-4 text-primary" /> Videos
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {vehicle.videos.map((url, i) => (
+                    <video
+                      key={i}
+                      src={url}
+                      controls
+                      preload="metadata"
+                      className="w-full rounded-lg border border-border aspect-video bg-black"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Title */}
             <div>
               <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">

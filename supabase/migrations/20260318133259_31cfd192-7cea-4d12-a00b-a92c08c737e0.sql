@@ -1,0 +1,1 @@
+ALTER TABLE public.auctions ADD COLUMN live_stream_url text;

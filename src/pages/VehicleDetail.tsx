@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign } from "lucide-react";
+import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign, Video } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import AuctionTimer from "@/components/AuctionTimer";
@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-function dbToVehicle(v: any): Vehicle {
+function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: string } {
   const auction = v.auctions?.[0];
   const bidCount = auction?.bids?.[0]?.count ?? 0;
   const firstImage = v.images?.[0]
@@ -42,13 +42,15 @@ function dbToVehicle(v: any): Vehicle {
     estimatedValue: v.ai_market_value ?? 0,
     repairCost: v.ai_repair_cost ?? 0,
     profitPotential: v.ai_profit_potential ?? 0,
+    videos: v.videos ?? [],
+    live_stream_url: auction?.live_stream_url ?? null,
   };
 }
 
 const VehicleDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [vehicle, setVehicle] = useState<Vehicle | null | undefined>(undefined); // undefined = loading
+  const [vehicle, setVehicle] = useState<(Vehicle & { videos?: string[]; live_stream_url?: string }) | null | undefined>(undefined);
   const [bidAmount, setBidAmount] = useState(0);
 
   const fetchFromDb = useCallback(async () => {
@@ -146,6 +148,45 @@ const VehicleDetail = () => {
                 <Badge variant="live" className="absolute top-3 left-3">● LIVE AUCTION</Badge>
               )}
             </div>
+
+            {/* Live Stream */}
+            {vehicle.isLive && vehicle.live_stream_url && (
+              <div className="rounded-lg overflow-hidden border border-primary/30 bg-card">
+                <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 border-b border-border">
+                  <span className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                  <span className="text-sm font-semibold text-foreground">Live Stream</span>
+                </div>
+                <div className="aspect-video">
+                  <iframe
+                    src={vehicle.live_stream_url.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Live Stream"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Uploaded Videos */}
+            {vehicle.videos && vehicle.videos.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
+                  <Video className="w-4 h-4 text-primary" /> Videos
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {vehicle.videos.map((url, i) => (
+                    <video
+                      key={i}
+                      src={url}
+                      controls
+                      preload="metadata"
+                      className="w-full rounded-lg border border-border aspect-video bg-black"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Title */}
             <div>

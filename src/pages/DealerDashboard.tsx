@@ -26,6 +26,7 @@ import {
   BarChart3,
   Trash2,
   Eye,
+  Pencil,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 

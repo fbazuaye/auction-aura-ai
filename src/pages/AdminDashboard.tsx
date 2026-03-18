@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -27,6 +28,8 @@ import {
   TrendingUp,
   Loader2,
   Pencil,
+  Save,
+  Video,
 } from "lucide-react";
 
 interface SellerRequest {
@@ -54,6 +57,7 @@ interface AuctionRow {
   status: string;
   starts_at: string;
   ends_at: string;
+  live_stream_url: string | null;
   vehicles: { make: string; model: string; year: number } | null;
 }
 
@@ -67,6 +71,8 @@ const AdminDashboard = () => {
   const [auctions, setAuctions] = useState<AuctionRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [editingStreamUrl, setEditingStreamUrl] = useState<string | null>(null);
+  const [streamUrlValue, setStreamUrlValue] = useState("");
   const [stats, setStats] = useState({ totalUsers: 0, totalVehicles: 0, activeAuctions: 0, totalBids: 0 });
 
   useEffect(() => {
@@ -96,7 +102,7 @@ const AdminDashboard = () => {
           .order("created_at", { ascending: false }),
         supabase
           .from("auctions")
-          .select("id, start_price, current_bid, status, starts_at, ends_at, vehicles(make, model, year)")
+          .select("id, start_price, current_bid, status, starts_at, ends_at, live_stream_url, vehicles(make, model, year)")
           .order("created_at", { ascending: false }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("vehicles").select("id", { count: "exact", head: true }),
@@ -159,6 +165,27 @@ const AdminDashboard = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Seller role revoked" });
+      fetchData();
+    }
+    setActionLoading(null);
+  };
+
+  const startEditStreamUrl = (auction: AuctionRow) => {
+    setEditingStreamUrl(auction.id);
+    setStreamUrlValue(auction.live_stream_url || "");
+  };
+
+  const saveStreamUrl = async (auctionId: string) => {
+    setActionLoading(auctionId);
+    const { error } = await supabase
+      .from("auctions")
+      .update({ live_stream_url: streamUrlValue || null })
+      .eq("id", auctionId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Live stream URL updated" });
+      setEditingStreamUrl(null);
       fetchData();
     }
     setActionLoading(null);
@@ -369,6 +396,7 @@ const AdminDashboard = () => {
                           <TableHead>Status</TableHead>
                           <TableHead>Start Price</TableHead>
                           <TableHead>Current Bid</TableHead>
+                          <TableHead>Live Stream URL</TableHead>
                           <TableHead>Starts</TableHead>
                           <TableHead>Ends</TableHead>
                         </TableRow>
@@ -385,6 +413,49 @@ const AdminDashboard = () => {
                             </TableCell>
                             <TableCell className="text-foreground font-medium">
                               {a.current_bid ? `$${a.current_bid.toLocaleString()}` : "No bids"}
+                            </TableCell>
+                            <TableCell>
+                              {editingStreamUrl === a.id ? (
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    value={streamUrlValue}
+                                    onChange={(e) => setStreamUrlValue(e.target.value)}
+                                    placeholder="https://..."
+                                    className="h-7 text-xs w-48"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="h-7 px-2"
+                                    onClick={() => saveStreamUrl(a.id)}
+                                    disabled={actionLoading === a.id}
+                                  >
+                                    {actionLoading === a.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 px-2"
+                                    onClick={() => setEditingStreamUrl(null)}
+                                  >
+                                    <XCircle className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs text-muted-foreground truncate max-w-[150px]">
+                                    {a.live_stream_url || "—"}
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 px-1"
+                                    onClick={() => startEditStreamUrl(a)}
+                                  >
+                                    <Pencil className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell className="text-muted-foreground text-xs">
                               {new Date(a.starts_at).toLocaleDateString()}

@@ -271,6 +271,21 @@ const ListVehicle = () => {
           .update(vehicleData)
           .eq("id", editId);
         if (updateError) throw updateError;
+
+        // Update auction settings if auction exists
+        if (createAuction) {
+          const { error: auctionUpdateError } = await supabase
+            .from("auctions")
+            .update({
+              start_price: auctionSettings.start_price,
+              bid_increment: auctionSettings.bid_increment,
+              reserve_price: form.reserve_price || null,
+              live_stream_url: auctionSettings.live_stream_url || null,
+            } as any)
+            .eq("vehicle_id", editId);
+          if (auctionUpdateError) throw auctionUpdateError;
+        }
+
         toast({ title: "Vehicle updated!", description: "Your listing has been updated successfully." });
         navigate(`/vehicle/${editId}`);
       } else {

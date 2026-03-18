@@ -28,6 +28,8 @@ import {
   TrendingUp,
   Loader2,
   Pencil,
+  Save,
+  Video,
 } from "lucide-react";
 
 interface SellerRequest {

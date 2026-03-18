@@ -170,6 +170,27 @@ const AdminDashboard = () => {
     setActionLoading(null);
   };
 
+  const startEditStreamUrl = (auction: AuctionRow) => {
+    setEditingStreamUrl(auction.id);
+    setStreamUrlValue(auction.live_stream_url || "");
+  };
+
+  const saveStreamUrl = async (auctionId: string) => {
+    setActionLoading(auctionId);
+    const { error } = await supabase
+      .from("auctions")
+      .update({ live_stream_url: streamUrlValue || null })
+      .eq("id", auctionId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Live stream URL updated" });
+      setEditingStreamUrl(null);
+      fetchData();
+    }
+    setActionLoading(null);
+  };
+
   const statusBadge = (status: string) => {
     const map: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
       pending: { variant: "outline", label: "Pending" },

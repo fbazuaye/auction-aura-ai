@@ -821,6 +821,7 @@ const ListVehicle = () => {
             </CardContent>
           </Card>
 
+          <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="font-display text-lg flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" /> AI Vehicle Intelligence

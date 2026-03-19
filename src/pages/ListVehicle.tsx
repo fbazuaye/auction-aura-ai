@@ -27,7 +27,11 @@ import {
   X,
   Sparkles,
   Video,
+  Play,
+  Pause,
+  Square,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const ListVehicle = () => {
   const { id: editId } = useParams<{ id: string }>();

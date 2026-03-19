@@ -591,6 +591,41 @@ const ListVehicle = () => {
                 )}
               </CardTitle>
             </CardHeader>
+            {isEditMode && hasRole("admin") && auctionId && (
+              <div className="px-6 pb-4 flex items-center gap-3 flex-wrap">
+                <span className="text-sm text-muted-foreground">Status:</span>
+                <Badge variant={auctionStatus === "active" ? "default" : auctionStatus === "ended" ? "destructive" : "secondary"} className="capitalize">
+                  {auctionStatus}
+                </Badge>
+                <div className="flex gap-2 ml-auto">
+                  {auctionStatus !== "active" && auctionStatus !== "ended" && (
+                    <Button type="button" size="sm" variant="success" disabled={statusLoading} onClick={() => handleAuctionStatusChange("active")}>
+                      <Play className="w-3 h-3 mr-1" /> Activate
+                    </Button>
+                  )}
+                  {auctionStatus === "active" && (
+                    <>
+                      <Button type="button" size="sm" variant="secondary" disabled={statusLoading} onClick={() => handleAuctionStatusChange("paused")}>
+                        <Pause className="w-3 h-3 mr-1" /> Pause
+                      </Button>
+                      <Button type="button" size="sm" variant="destructive" disabled={statusLoading} onClick={() => handleAuctionStatusChange("ended")}>
+                        <Square className="w-3 h-3 mr-1" /> End
+                      </Button>
+                    </>
+                  )}
+                  {auctionStatus === "paused" && (
+                    <>
+                      <Button type="button" size="sm" variant="success" disabled={statusLoading} onClick={() => handleAuctionStatusChange("active")}>
+                        <Play className="w-3 h-3 mr-1" /> Resume
+                      </Button>
+                      <Button type="button" size="sm" variant="destructive" disabled={statusLoading} onClick={() => handleAuctionStatusChange("ended")}>
+                        <Square className="w-3 h-3 mr-1" /> End
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
             {(createAuction || isEditMode) && (
               <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">

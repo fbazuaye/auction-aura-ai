@@ -149,6 +149,7 @@ const ListVehicle = () => {
       });
       setExistingImageUrls(data.images || []);
       setExistingVideoUrls(data.videos || []);
+      setExistingReportUrls(data.inspection_reports || []);
 
       // Fetch existing auction data
       const { data: auctionData } = await supabase

@@ -619,9 +619,27 @@ const ListVehicle = () => {
                       <Button type="button" size="sm" variant="secondary" disabled={statusLoading} onClick={() => handleAuctionStatusChange("paused")}>
                         <Pause className="w-3 h-3 mr-1" /> Pause
                       </Button>
-                      <Button type="button" size="sm" variant="destructive" disabled={statusLoading} onClick={() => handleAuctionStatusChange("ended")}>
-                        <Square className="w-3 h-3 mr-1" /> End
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button type="button" size="sm" variant="destructive" disabled={statusLoading}>
+                            <Square className="w-3 h-3 mr-1" /> End
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>End this auction?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. The auction will be permanently ended and no further bids will be accepted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleAuctionStatusChange("ended")} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              End Auction
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </>
                   )}
                   {auctionStatus === "paused" && (
@@ -629,9 +647,27 @@ const ListVehicle = () => {
                       <Button type="button" size="sm" variant="success" disabled={statusLoading} onClick={() => handleAuctionStatusChange("active")}>
                         <Play className="w-3 h-3 mr-1" /> Resume
                       </Button>
-                      <Button type="button" size="sm" variant="destructive" disabled={statusLoading} onClick={() => handleAuctionStatusChange("ended")}>
-                        <Square className="w-3 h-3 mr-1" /> End
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button type="button" size="sm" variant="destructive" disabled={statusLoading}>
+                            <Square className="w-3 h-3 mr-1" /> End
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>End this auction?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. The auction will be permanently ended and no further bids will be accepted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleAuctionStatusChange("ended")} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              End Auction
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </>
                   )}
                 </div>

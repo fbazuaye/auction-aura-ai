@@ -330,7 +330,20 @@ const ListVehicle = () => {
         ai_condition_score: aiAnalysis?.condition_score || null,
         ai_repair_cost: aiAnalysis?.repair_cost || null,
         ai_profit_potential: aiAnalysis?.profit_potential || null,
-      };
+        body_style: form.body_style || null,
+        exterior_color: form.exterior_color || null,
+        interior_color: form.interior_color || null,
+        engine_type: form.engine_type || null,
+        transmission: form.transmission || null,
+        drive_type: form.drive_type || null,
+        fuel_type: form.fuel_type || null,
+        cylinders: form.cylinders ? Number(form.cylinders) : null,
+        title_status: form.title_status || null,
+        primary_damage: form.primary_damage || null,
+        secondary_damage: form.secondary_damage || null,
+        keys_available: form.keys_available,
+        highlights: form.highlights.length > 0 ? form.highlights : null,
+      } as any;
 
       if (isEditMode && editId) {
         // Update existing vehicle

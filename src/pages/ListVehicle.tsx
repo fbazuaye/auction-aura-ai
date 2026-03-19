@@ -340,8 +340,24 @@ const ListVehicle = () => {
         uploadedVideoUrls.push(urlData.publicUrl);
       }
 
+      // Upload new inspection reports
+      const uploadedReportUrls: string[] = [];
+      for (const file of inspectionReports) {
+        const ext = file.name.split(".").pop();
+        const filePath = `${user.id}/reports/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("vehicle-media")
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from("vehicle-media")
+          .getPublicUrl(filePath);
+        uploadedReportUrls.push(urlData.publicUrl);
+      }
+
       const allImages = [...existingImageUrls, ...uploadedUrls];
       const allVideos = [...existingVideoUrls, ...uploadedVideoUrls];
+      const allReports = [...existingReportUrls, ...uploadedReportUrls];
 
       const vehicleData = {
         make: form.make,

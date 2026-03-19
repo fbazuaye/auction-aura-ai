@@ -371,6 +371,7 @@ const ListVehicle = () => {
         reserve_price: form.reserve_price || null,
         images: allImages,
         videos: allVideos,
+        inspection_reports: allReports.length > 0 ? allReports : null,
         ai_market_value: aiAnalysis?.market_value || null,
         ai_condition_score: aiAnalysis?.condition_score || null,
         ai_repair_cost: aiAnalysis?.repair_cost || null,

@@ -104,12 +104,20 @@ const Index = () => {
     };
   }, [fetchVehicles]);
 
-  const liveVehicles = vehicles.filter((v) => v.isLive);
+  // Prioritize DB vehicles over mock data
+  const dbIds = new Set(dbVehiclesRef.current.map((v) => v.id));
+  const sortByDbFirst = (a: Vehicle, b: Vehicle) => {
+    const aIsDb = dbIds.has(a.id) ? 0 : 1;
+    const bIsDb = dbIds.has(b.id) ? 0 : 1;
+    return aIsDb - bIsDb;
+  };
+
+  const liveVehicles = vehicles.filter((v) => v.isLive).sort(sortByDbFirst);
   const endingSoon = [...vehicles]
     .filter((v) => v.auctionEndsAt > new Date())
     .sort((a, b) => a.auctionEndsAt.getTime() - b.auctionEndsAt.getTime())
-    .slice(0, 3);
-  const aiPicks = [...vehicles].sort((a, b) => b.aiScore - a.aiScore).slice(0, 3);
+    .slice(0, 6);
+  const aiPicks = [...vehicles].sort((a, b) => b.aiScore - a.aiScore).slice(0, 6);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">

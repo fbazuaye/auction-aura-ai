@@ -82,6 +82,8 @@ const ListVehicle = () => {
   const [videos, setVideos] = useState<File[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [existingVideoUrls, setExistingVideoUrls] = useState<string[]>([]);
+  const [inspectionReports, setInspectionReports] = useState<File[]>([]);
+  const [existingReportUrls, setExistingReportUrls] = useState<string[]>([]);
   const [createAuction, setCreateAuction] = useState(false);
   const [auctionSettings, setAuctionSettings] = useState({
     start_price: 0,

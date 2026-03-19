@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: string } {
+function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: string; body_style?: string; exterior_color?: string; interior_color?: string; engine_type?: string; transmission?: string; drive_type?: string; fuel_type?: string; cylinders?: number; title_status?: string; primary_damage?: string; secondary_damage?: string; keys_available?: boolean; highlights?: string[] } {
   const auction = v.auctions?.[0];
   const bidCount = auction?.bids?.[0]?.count ?? 0;
   const firstImage = v.images?.[0]
@@ -44,6 +44,19 @@ function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: s
     profitPotential: v.ai_profit_potential ?? 0,
     videos: v.videos ?? [],
     live_stream_url: auction?.live_stream_url ?? null,
+    body_style: v.body_style ?? null,
+    exterior_color: v.exterior_color ?? null,
+    interior_color: v.interior_color ?? null,
+    engine_type: v.engine_type ?? null,
+    transmission: v.transmission ?? null,
+    drive_type: v.drive_type ?? null,
+    fuel_type: v.fuel_type ?? null,
+    cylinders: v.cylinders ?? null,
+    title_status: v.title_status ?? null,
+    primary_damage: v.primary_damage ?? null,
+    secondary_damage: v.secondary_damage ?? null,
+    keys_available: v.keys_available ?? null,
+    highlights: v.highlights ?? [],
   };
 }
 

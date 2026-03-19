@@ -216,6 +216,28 @@ const ListVehicle = () => {
     }
   };
 
+  const handleAuctionStatusChange = async (newStatus: string) => {
+    if (!auctionId) return;
+    setStatusLoading(true);
+    try {
+      const updateData: Record<string, any> = { status: newStatus };
+      if (newStatus === "ended") {
+        updateData.ends_at = new Date().toISOString();
+      }
+      const { error } = await supabase
+        .from("auctions")
+        .update(updateData)
+        .eq("id", auctionId);
+      if (error) throw error;
+      setAuctionStatus(newStatus);
+      toast({ title: `Auction ${newStatus}`, description: `Auction status changed to ${newStatus}.` });
+    } catch (err: any) {
+      toast({ title: "Error updating status", description: err.message, variant: "destructive" });
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;

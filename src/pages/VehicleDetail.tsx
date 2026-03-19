@@ -63,7 +63,7 @@ function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: s
 const VehicleDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [vehicle, setVehicle] = useState<(Vehicle & { videos?: string[]; live_stream_url?: string }) | null | undefined>(undefined);
+  const [vehicle, setVehicle] = useState<(Vehicle & { videos?: string[]; live_stream_url?: string; body_style?: string; exterior_color?: string; interior_color?: string; engine_type?: string; transmission?: string; drive_type?: string; fuel_type?: string; cylinders?: number; title_status?: string; primary_damage?: string; secondary_damage?: string; keys_available?: boolean; highlights?: string[] }) | null | undefined>(undefined);
   const [bidAmount, setBidAmount] = useState(0);
 
   const fetchFromDb = useCallback(async () => {

@@ -31,6 +31,8 @@ import {
   Pause,
   Square,
   Hash,
+  FileText,
+  Download,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -82,6 +84,8 @@ const ListVehicle = () => {
   const [videos, setVideos] = useState<File[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [existingVideoUrls, setExistingVideoUrls] = useState<string[]>([]);
+  const [inspectionReports, setInspectionReports] = useState<File[]>([]);
+  const [existingReportUrls, setExistingReportUrls] = useState<string[]>([]);
   const [createAuction, setCreateAuction] = useState(false);
   const [auctionSettings, setAuctionSettings] = useState({
     start_price: 0,
@@ -145,6 +149,7 @@ const ListVehicle = () => {
       });
       setExistingImageUrls(data.images || []);
       setExistingVideoUrls(data.videos || []);
+      setExistingReportUrls(data.inspection_reports || []);
 
       // Fetch existing auction data
       const { data: auctionData } = await supabase
@@ -225,6 +230,29 @@ const ListVehicle = () => {
 
   const removeExistingVideo = (idx: number) => {
     setExistingVideoUrls((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleReportUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const totalReports = existingReportUrls.length + inspectionReports.length + files.length;
+    if (totalReports > 5) {
+      toast({ title: "Maximum 5 inspection reports allowed", variant: "destructive" });
+      return;
+    }
+    const oversized = files.find((f) => f.size > 20 * 1024 * 1024);
+    if (oversized) {
+      toast({ title: "Each report must be under 20MB", variant: "destructive" });
+      return;
+    }
+    setInspectionReports((prev) => [...prev, ...files]);
+  };
+
+  const removeReport = (idx: number) => {
+    setInspectionReports((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeExistingReport = (idx: number) => {
+    setExistingReportUrls((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const runAiAnalysis = async () => {
@@ -312,8 +340,24 @@ const ListVehicle = () => {
         uploadedVideoUrls.push(urlData.publicUrl);
       }
 
+      // Upload new inspection reports
+      const uploadedReportUrls: string[] = [];
+      for (const file of inspectionReports) {
+        const ext = file.name.split(".").pop();
+        const filePath = `${user.id}/reports/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("vehicle-media")
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage
+          .from("vehicle-media")
+          .getPublicUrl(filePath);
+        uploadedReportUrls.push(urlData.publicUrl);
+      }
+
       const allImages = [...existingImageUrls, ...uploadedUrls];
       const allVideos = [...existingVideoUrls, ...uploadedVideoUrls];
+      const allReports = [...existingReportUrls, ...uploadedReportUrls];
 
       const vehicleData = {
         make: form.make,
@@ -327,6 +371,7 @@ const ListVehicle = () => {
         reserve_price: form.reserve_price || null,
         images: allImages,
         videos: allVideos,
+        inspection_reports: allReports.length > 0 ? allReports : null,
         ai_market_value: aiAnalysis?.market_value || null,
         ai_condition_score: aiAnalysis?.condition_score || null,
         ai_repair_cost: aiAnalysis?.repair_cost || null,
@@ -438,6 +483,7 @@ const ListVehicle = () => {
 
   const totalImages = existingImageUrls.length + images.length;
   const totalVideos = existingVideoUrls.length + videos.length;
+  const totalReports = existingReportUrls.length + inspectionReports.length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -724,6 +770,54 @@ const ListVehicle = () => {
                 )}
               </div>
               <p className="text-xs text-muted-foreground">{totalVideos}/3 videos (max 100MB each, mp4/webm)</p>
+            </CardContent>
+          </Card>
+
+          {/* Inspection Reports */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" /> Vehicle Inspection Reports
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">Upload inspection reports (PDF, DOC, images) so buyers can review vehicle condition details.</p>
+              <div className="space-y-2">
+                {existingReportUrls.map((url, i) => {
+                  const fileName = decodeURIComponent(url.split("/").pop() || `Report ${i + 1}`);
+                  return (
+                    <div key={`existing-r-${i}`} className="flex items-center gap-3 p-3 rounded-lg bg-secondary border border-border">
+                      <FileText className="w-4 h-4 text-primary shrink-0" />
+                      <span className="text-sm text-foreground truncate flex-1">{fileName}</span>
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <Button type="button" variant="ghost" size="sm" className="h-7 px-2">
+                          <Download className="w-3 h-3" />
+                        </Button>
+                      </a>
+                      <button type="button" onClick={() => removeExistingReport(i)} className="w-6 h-6 bg-background/80 rounded-full flex items-center justify-center shrink-0">
+                        <X className="w-3 h-3 text-foreground" />
+                      </button>
+                    </div>
+                  );
+                })}
+                {inspectionReports.map((file, i) => (
+                  <div key={`new-r-${i}`} className="flex items-center gap-3 p-3 rounded-lg bg-secondary border border-border">
+                    <FileText className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm text-foreground truncate flex-1">{file.name}</span>
+                    <button type="button" onClick={() => removeReport(i)} className="w-6 h-6 bg-background/80 rounded-full flex items-center justify-center shrink-0">
+                      <X className="w-3 h-3 text-foreground" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {totalReports < 5 && (
+                <label className="flex items-center justify-center gap-2 p-4 rounded-lg border-2 border-dashed border-border cursor-pointer hover:border-primary transition-colors">
+                  <Upload className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Upload Inspection Report</span>
+                  <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp" multiple onChange={handleReportUpload} className="hidden" />
+                </label>
+              )}
+              <p className="text-xs text-muted-foreground">{totalReports}/5 reports (max 20MB each)</p>
             </CardContent>
           </Card>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign, Video, Car, Fuel, Key, Palette } from "lucide-react";
+import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign, Video, Car, Fuel, Key, Palette, FileText, Download } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import AuctionTimer from "@/components/AuctionTimer";
@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: string; body_style?: string; exterior_color?: string; interior_color?: string; engine_type?: string; transmission?: string; drive_type?: string; fuel_type?: string; cylinders?: number; title_status?: string; primary_damage?: string; secondary_damage?: string; keys_available?: boolean; highlights?: string[] } {
+function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: string; body_style?: string; exterior_color?: string; interior_color?: string; engine_type?: string; transmission?: string; drive_type?: string; fuel_type?: string; cylinders?: number; title_status?: string; primary_damage?: string; secondary_damage?: string; keys_available?: boolean; highlights?: string[]; inspection_reports?: string[] } {
   const auction = v.auctions?.[0];
   const bidCount = auction?.bids?.[0]?.count ?? 0;
   const firstImage = v.images?.[0]
@@ -57,13 +57,14 @@ function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: s
     secondary_damage: v.secondary_damage ?? null,
     keys_available: v.keys_available ?? null,
     highlights: v.highlights ?? [],
+    inspection_reports: v.inspection_reports ?? [],
   };
 }
 
 const VehicleDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [vehicle, setVehicle] = useState<(Vehicle & { videos?: string[]; live_stream_url?: string; body_style?: string; exterior_color?: string; interior_color?: string; engine_type?: string; transmission?: string; drive_type?: string; fuel_type?: string; cylinders?: number; title_status?: string; primary_damage?: string; secondary_damage?: string; keys_available?: boolean; highlights?: string[] }) | null | undefined>(undefined);
+  const [vehicle, setVehicle] = useState<(Vehicle & { videos?: string[]; live_stream_url?: string; body_style?: string; exterior_color?: string; interior_color?: string; engine_type?: string; transmission?: string; drive_type?: string; fuel_type?: string; cylinders?: number; title_status?: string; primary_damage?: string; secondary_damage?: string; keys_available?: boolean; highlights?: string[]; inspection_reports?: string[] }) | null | undefined>(undefined);
   const [bidAmount, setBidAmount] = useState(0);
 
   const fetchFromDb = useCallback(async () => {
@@ -334,6 +335,32 @@ const VehicleDetail = () => {
 
               {/* Auto-bid panel */}
               <AutoBidPanel auctionId={vehicle.id} currentBid={vehicle.currentBid} bidIncrement={500} />
+
+              {/* Download Inspection Report */}
+              {vehicle.inspection_reports && vehicle.inspection_reports.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {vehicle.inspection_reports.map((url, i) => (
+                    <a
+                      key={i}
+                      href={url}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full flex items-center gap-2 border-primary/20 hover:bg-primary/5"
+                      >
+                        <FileText className="w-4 h-4 text-primary" />
+                        <span className="flex-1 text-left text-sm">Download Vehicle Inspection Report</span>
+                        <Download className="w-4 h-4 text-muted-foreground" />
+                      </Button>
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* AI Insights Panel */}

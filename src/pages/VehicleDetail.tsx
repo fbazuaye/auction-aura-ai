@@ -227,7 +227,60 @@ const VehicleDetail = () => {
               ))}
             </div>
 
-            {/* Bid History placeholder */}
+            {/* Vehicle Specifications */}
+            {(vehicle.body_style || vehicle.engine_type || vehicle.transmission || vehicle.drive_type || vehicle.fuel_type || vehicle.exterior_color || vehicle.interior_color || vehicle.cylinders) && (
+              <div className="p-4 rounded-lg bg-card border border-border">
+                <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Car className="w-4 h-4 text-primary" /> Vehicle Specifications
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: "Body Style", value: vehicle.body_style },
+                    { label: "Exterior Color", value: vehicle.exterior_color },
+                    { label: "Interior Color", value: vehicle.interior_color },
+                    { label: "Engine", value: vehicle.engine_type },
+                    { label: "Transmission", value: vehicle.transmission },
+                    { label: "Drive Type", value: vehicle.drive_type },
+                    { label: "Fuel Type", value: vehicle.fuel_type },
+                    { label: "Cylinders", value: vehicle.cylinders ? String(vehicle.cylinders) : null },
+                  ].filter(s => s.value).map(spec => (
+                    <div key={spec.label} className="py-2 border-b border-border last:border-0">
+                      <p className="text-xs text-muted-foreground">{spec.label}</p>
+                      <p className="text-sm font-semibold text-foreground">{spec.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Title & Damage Info */}
+            {(vehicle.title_status || vehicle.primary_damage || vehicle.keys_available !== undefined || (vehicle.highlights && vehicle.highlights.length > 0)) && (
+              <div className="p-4 rounded-lg bg-card border border-border">
+                <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Hash className="w-4 h-4 text-primary" /> Title & Damage Information
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: "Title Status", value: vehicle.title_status },
+                    { label: "Primary Damage", value: vehicle.primary_damage },
+                    { label: "Secondary Damage", value: vehicle.secondary_damage },
+                    { label: "Keys Available", value: vehicle.keys_available !== null && vehicle.keys_available !== undefined ? (vehicle.keys_available ? "Yes" : "No") : null },
+                  ].filter(s => s.value).map(spec => (
+                    <div key={spec.label} className="py-2 border-b border-border last:border-0">
+                      <p className="text-xs text-muted-foreground">{spec.label}</p>
+                      <p className="text-sm font-semibold text-foreground">{spec.value}</p>
+                    </div>
+                  ))}
+                </div>
+                {vehicle.highlights && vehicle.highlights.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {vehicle.highlights.map(h => (
+                      <Badge key={h} variant="secondary">{h}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="p-4 rounded-lg bg-card border border-border">
               <h3 className="font-display font-semibold text-foreground mb-3">Bid History</h3>
               <div className="space-y-2">

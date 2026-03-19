@@ -128,6 +128,19 @@ const ListVehicle = () => {
         location: data.location || "",
         description: data.description || "",
         reserve_price: data.reserve_price ? Number(data.reserve_price) : 0,
+        body_style: (data as any).body_style || "",
+        exterior_color: (data as any).exterior_color || "",
+        interior_color: (data as any).interior_color || "",
+        engine_type: (data as any).engine_type || "",
+        transmission: (data as any).transmission || "",
+        drive_type: (data as any).drive_type || "",
+        fuel_type: (data as any).fuel_type || "",
+        cylinders: (data as any).cylinders ? String((data as any).cylinders) : "",
+        title_status: (data as any).title_status || "",
+        primary_damage: (data as any).primary_damage || "",
+        secondary_damage: (data as any).secondary_damage || "",
+        keys_available: (data as any).keys_available !== false,
+        highlights: (data as any).highlights || [],
       });
       setExistingImageUrls(data.images || []);
       setExistingVideoUrls(data.videos || []);

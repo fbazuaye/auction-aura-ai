@@ -49,7 +49,8 @@ const Index = () => {
     const { data, error } = await supabase
       .from("vehicles")
       .select("*, auctions(*, bids(count))")
-      .eq("status", "approved");
+      .eq("status", "approved")
+      .order("created_at", { ascending: false });
 
     const dbVehicles = (!error && data) ? data.map(dbToVehicle) : [];
     dbVehiclesRef.current = dbVehicles;

@@ -483,6 +483,7 @@ const ListVehicle = () => {
 
   const totalImages = existingImageUrls.length + images.length;
   const totalVideos = existingVideoUrls.length + videos.length;
+  const totalReports = existingReportUrls.length + inspectionReports.length;
 
   return (
     <div className="min-h-screen bg-background">

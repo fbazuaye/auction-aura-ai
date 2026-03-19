@@ -773,7 +773,54 @@ const ListVehicle = () => {
             </CardContent>
           </Card>
 
+          {/* Inspection Reports */}
           <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" /> Vehicle Inspection Reports
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-muted-foreground">Upload inspection reports (PDF, DOC, images) so buyers can review vehicle condition details.</p>
+              <div className="space-y-2">
+                {existingReportUrls.map((url, i) => {
+                  const fileName = decodeURIComponent(url.split("/").pop() || `Report ${i + 1}`);
+                  return (
+                    <div key={`existing-r-${i}`} className="flex items-center gap-3 p-3 rounded-lg bg-secondary border border-border">
+                      <FileText className="w-4 h-4 text-primary shrink-0" />
+                      <span className="text-sm text-foreground truncate flex-1">{fileName}</span>
+                      <a href={url} target="_blank" rel="noopener noreferrer">
+                        <Button type="button" variant="ghost" size="sm" className="h-7 px-2">
+                          <Download className="w-3 h-3" />
+                        </Button>
+                      </a>
+                      <button type="button" onClick={() => removeExistingReport(i)} className="w-6 h-6 bg-background/80 rounded-full flex items-center justify-center shrink-0">
+                        <X className="w-3 h-3 text-foreground" />
+                      </button>
+                    </div>
+                  );
+                })}
+                {inspectionReports.map((file, i) => (
+                  <div key={`new-r-${i}`} className="flex items-center gap-3 p-3 rounded-lg bg-secondary border border-border">
+                    <FileText className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm text-foreground truncate flex-1">{file.name}</span>
+                    <button type="button" onClick={() => removeReport(i)} className="w-6 h-6 bg-background/80 rounded-full flex items-center justify-center shrink-0">
+                      <X className="w-3 h-3 text-foreground" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {totalReports < 5 && (
+                <label className="flex items-center justify-center gap-2 p-4 rounded-lg border-2 border-dashed border-border cursor-pointer hover:border-primary transition-colors">
+                  <Upload className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Upload Inspection Report</span>
+                  <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp" multiple onChange={handleReportUpload} className="hidden" />
+                </label>
+              )}
+              <p className="text-xs text-muted-foreground">{totalReports}/5 reports (max 20MB each)</p>
+            </CardContent>
+          </Card>
+
             <CardHeader>
               <CardTitle className="font-display text-lg flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" /> AI Vehicle Intelligence

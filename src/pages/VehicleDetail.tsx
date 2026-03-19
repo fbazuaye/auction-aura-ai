@@ -57,6 +57,7 @@ function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: s
     secondary_damage: v.secondary_damage ?? null,
     keys_available: v.keys_available ?? null,
     highlights: v.highlights ?? [],
+    inspection_reports: v.inspection_reports ?? [],
   };
 }
 

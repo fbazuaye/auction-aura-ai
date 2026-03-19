@@ -335,6 +335,32 @@ const VehicleDetail = () => {
 
               {/* Auto-bid panel */}
               <AutoBidPanel auctionId={vehicle.id} currentBid={vehicle.currentBid} bidIncrement={500} />
+
+              {/* Download Inspection Report */}
+              {vehicle.inspection_reports && vehicle.inspection_reports.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {vehicle.inspection_reports.map((url, i) => (
+                    <a
+                      key={i}
+                      href={url}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full flex items-center gap-2 border-primary/20 hover:bg-primary/5"
+                      >
+                        <FileText className="w-4 h-4 text-primary" />
+                        <span className="flex-1 text-left text-sm">Download Vehicle Inspection Report</span>
+                        <Download className="w-4 h-4 text-muted-foreground" />
+                      </Button>
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* AI Insights Panel */}

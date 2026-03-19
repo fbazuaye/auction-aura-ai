@@ -115,6 +115,8 @@ const ListVehicle = () => {
 
       if (auctionData) {
         setCreateAuction(true);
+        setAuctionId(auctionData.id);
+        setAuctionStatus(auctionData.status);
         const durationMs = new Date(auctionData.ends_at).getTime() - new Date(auctionData.starts_at).getTime();
         const durationHours = Math.round(durationMs / 3600000);
         setAuctionSettings({

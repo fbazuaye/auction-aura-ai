@@ -150,7 +150,7 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {liveVehicles.slice(0, 3).map((vehicle) => (
+              {liveVehicles.slice(0, 6).map((vehicle) => (
                 <VehicleCard key={vehicle.id} vehicle={vehicle} />
               ))}
               {liveVehicles.length === 0 && (

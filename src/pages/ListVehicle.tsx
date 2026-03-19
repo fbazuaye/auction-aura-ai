@@ -27,7 +27,11 @@ import {
   X,
   Sparkles,
   Video,
+  Play,
+  Pause,
+  Square,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const ListVehicle = () => {
   const { id: editId } = useParams<{ id: string }>();
@@ -60,6 +64,9 @@ const ListVehicle = () => {
     duration_hours: 24,
     live_stream_url: "",
   });
+  const [auctionStatus, setAuctionStatus] = useState<string>("scheduled");
+  const [auctionId, setAuctionId] = useState<string | null>(null);
+  const [statusLoading, setStatusLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchingVehicle, setFetchingVehicle] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -112,6 +119,8 @@ const ListVehicle = () => {
 
       if (auctionData) {
         setCreateAuction(true);
+        setAuctionId(auctionData.id);
+        setAuctionStatus(auctionData.status);
         const durationMs = new Date(auctionData.ends_at).getTime() - new Date(auctionData.starts_at).getTime();
         const durationHours = Math.round(durationMs / 3600000);
         setAuctionSettings({
@@ -204,6 +213,28 @@ const ListVehicle = () => {
       toast({ title: "AI analysis failed", description: err.message, variant: "destructive" });
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleAuctionStatusChange = async (newStatus: string) => {
+    if (!auctionId) return;
+    setStatusLoading(true);
+    try {
+      const updateData: Record<string, any> = { status: newStatus };
+      if (newStatus === "ended") {
+        updateData.ends_at = new Date().toISOString();
+      }
+      const { error } = await supabase
+        .from("auctions")
+        .update(updateData)
+        .eq("id", auctionId);
+      if (error) throw error;
+      setAuctionStatus(newStatus);
+      toast({ title: `Auction ${newStatus}`, description: `Auction status changed to ${newStatus}.` });
+    } catch (err: any) {
+      toast({ title: "Error updating status", description: err.message, variant: "destructive" });
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -560,6 +591,41 @@ const ListVehicle = () => {
                 )}
               </CardTitle>
             </CardHeader>
+            {isEditMode && hasRole("admin") && auctionId && (
+              <div className="px-6 pb-4 flex items-center gap-3 flex-wrap">
+                <span className="text-sm text-muted-foreground">Status:</span>
+                <Badge variant={auctionStatus === "active" ? "default" : auctionStatus === "ended" ? "destructive" : "secondary"} className="capitalize">
+                  {auctionStatus}
+                </Badge>
+                <div className="flex gap-2 ml-auto">
+                  {auctionStatus !== "active" && auctionStatus !== "ended" && (
+                    <Button type="button" size="sm" variant="success" disabled={statusLoading} onClick={() => handleAuctionStatusChange("active")}>
+                      <Play className="w-3 h-3 mr-1" /> Activate
+                    </Button>
+                  )}
+                  {auctionStatus === "active" && (
+                    <>
+                      <Button type="button" size="sm" variant="secondary" disabled={statusLoading} onClick={() => handleAuctionStatusChange("paused")}>
+                        <Pause className="w-3 h-3 mr-1" /> Pause
+                      </Button>
+                      <Button type="button" size="sm" variant="destructive" disabled={statusLoading} onClick={() => handleAuctionStatusChange("ended")}>
+                        <Square className="w-3 h-3 mr-1" /> End
+                      </Button>
+                    </>
+                  )}
+                  {auctionStatus === "paused" && (
+                    <>
+                      <Button type="button" size="sm" variant="success" disabled={statusLoading} onClick={() => handleAuctionStatusChange("active")}>
+                        <Play className="w-3 h-3 mr-1" /> Resume
+                      </Button>
+                      <Button type="button" size="sm" variant="destructive" disabled={statusLoading} onClick={() => handleAuctionStatusChange("ended")}>
+                        <Square className="w-3 h-3 mr-1" /> End
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
             {(createAuction || isEditMode) && (
               <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">

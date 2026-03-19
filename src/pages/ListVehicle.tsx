@@ -232,6 +232,29 @@ const ListVehicle = () => {
     setExistingVideoUrls((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const handleReportUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const totalReports = existingReportUrls.length + inspectionReports.length + files.length;
+    if (totalReports > 5) {
+      toast({ title: "Maximum 5 inspection reports allowed", variant: "destructive" });
+      return;
+    }
+    const oversized = files.find((f) => f.size > 20 * 1024 * 1024);
+    if (oversized) {
+      toast({ title: "Each report must be under 20MB", variant: "destructive" });
+      return;
+    }
+    setInspectionReports((prev) => [...prev, ...files]);
+  };
+
+  const removeReport = (idx: number) => {
+    setInspectionReports((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeExistingReport = (idx: number) => {
+    setExistingReportUrls((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   const runAiAnalysis = async () => {
     if (!form.make || !form.model || !form.year) {
       toast({ title: "Fill in make, model, and year first", variant: "destructive" });

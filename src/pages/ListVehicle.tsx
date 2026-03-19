@@ -61,6 +61,19 @@ const ListVehicle = () => {
     location: "",
     description: "",
     reserve_price: 0,
+    body_style: "",
+    exterior_color: "",
+    interior_color: "",
+    engine_type: "",
+    transmission: "",
+    drive_type: "",
+    fuel_type: "",
+    cylinders: "",
+    title_status: "",
+    primary_damage: "",
+    secondary_damage: "",
+    keys_available: true,
+    highlights: [] as string[],
   });
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);

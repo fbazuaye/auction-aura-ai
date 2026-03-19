@@ -298,19 +298,32 @@ export type Database = {
           ai_market_value: number | null
           ai_profit_potential: number | null
           ai_repair_cost: number | null
+          body_style: string | null
           condition: string
           created_at: string
+          cylinders: number | null
           description: string | null
+          drive_type: string | null
+          engine_type: string | null
+          exterior_color: string | null
+          fuel_type: string | null
+          highlights: string[] | null
           id: string
           images: string[] | null
           inspection_reports: string[] | null
+          interior_color: string | null
+          keys_available: boolean | null
           location: string | null
           make: string
           mileage: number
           model: string
+          primary_damage: string | null
           reserve_price: number | null
+          secondary_damage: string | null
           seller_id: string
           status: string
+          title_status: string | null
+          transmission: string | null
           updated_at: string
           videos: string[] | null
           vin: string | null
@@ -321,19 +334,32 @@ export type Database = {
           ai_market_value?: number | null
           ai_profit_potential?: number | null
           ai_repair_cost?: number | null
+          body_style?: string | null
           condition?: string
           created_at?: string
+          cylinders?: number | null
           description?: string | null
+          drive_type?: string | null
+          engine_type?: string | null
+          exterior_color?: string | null
+          fuel_type?: string | null
+          highlights?: string[] | null
           id?: string
           images?: string[] | null
           inspection_reports?: string[] | null
+          interior_color?: string | null
+          keys_available?: boolean | null
           location?: string | null
           make: string
           mileage: number
           model: string
+          primary_damage?: string | null
           reserve_price?: number | null
+          secondary_damage?: string | null
           seller_id: string
           status?: string
+          title_status?: string | null
+          transmission?: string | null
           updated_at?: string
           videos?: string[] | null
           vin?: string | null
@@ -344,19 +370,32 @@ export type Database = {
           ai_market_value?: number | null
           ai_profit_potential?: number | null
           ai_repair_cost?: number | null
+          body_style?: string | null
           condition?: string
           created_at?: string
+          cylinders?: number | null
           description?: string | null
+          drive_type?: string | null
+          engine_type?: string | null
+          exterior_color?: string | null
+          fuel_type?: string | null
+          highlights?: string[] | null
           id?: string
           images?: string[] | null
           inspection_reports?: string[] | null
+          interior_color?: string | null
+          keys_available?: boolean | null
           location?: string | null
           make?: string
           mileage?: number
           model?: string
+          primary_damage?: string | null
           reserve_price?: number | null
+          secondary_damage?: string | null
           seller_id?: string
           status?: string
+          title_status?: string | null
+          transmission?: string | null
           updated_at?: string
           videos?: string[] | null
           vin?: string | null

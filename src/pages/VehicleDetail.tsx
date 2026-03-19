@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign, Video } from "lucide-react";
+import { ArrowLeft, MapPin, Gauge, Calendar, Hash, Zap, TrendingUp, Wrench, DollarSign, Video, Car, Fuel, Key, Palette } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import AuctionTimer from "@/components/AuctionTimer";
@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: string } {
+function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: string; body_style?: string; exterior_color?: string; interior_color?: string; engine_type?: string; transmission?: string; drive_type?: string; fuel_type?: string; cylinders?: number; title_status?: string; primary_damage?: string; secondary_damage?: string; keys_available?: boolean; highlights?: string[] } {
   const auction = v.auctions?.[0];
   const bidCount = auction?.bids?.[0]?.count ?? 0;
   const firstImage = v.images?.[0]
@@ -44,13 +44,26 @@ function dbToVehicle(v: any): Vehicle & { videos?: string[]; live_stream_url?: s
     profitPotential: v.ai_profit_potential ?? 0,
     videos: v.videos ?? [],
     live_stream_url: auction?.live_stream_url ?? null,
+    body_style: v.body_style ?? null,
+    exterior_color: v.exterior_color ?? null,
+    interior_color: v.interior_color ?? null,
+    engine_type: v.engine_type ?? null,
+    transmission: v.transmission ?? null,
+    drive_type: v.drive_type ?? null,
+    fuel_type: v.fuel_type ?? null,
+    cylinders: v.cylinders ?? null,
+    title_status: v.title_status ?? null,
+    primary_damage: v.primary_damage ?? null,
+    secondary_damage: v.secondary_damage ?? null,
+    keys_available: v.keys_available ?? null,
+    highlights: v.highlights ?? [],
   };
 }
 
 const VehicleDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [vehicle, setVehicle] = useState<(Vehicle & { videos?: string[]; live_stream_url?: string }) | null | undefined>(undefined);
+  const [vehicle, setVehicle] = useState<(Vehicle & { videos?: string[]; live_stream_url?: string; body_style?: string; exterior_color?: string; interior_color?: string; engine_type?: string; transmission?: string; drive_type?: string; fuel_type?: string; cylinders?: number; title_status?: string; primary_damage?: string; secondary_damage?: string; keys_available?: boolean; highlights?: string[] }) | null | undefined>(undefined);
   const [bidAmount, setBidAmount] = useState(0);
 
   const fetchFromDb = useCallback(async () => {
@@ -214,7 +227,60 @@ const VehicleDetail = () => {
               ))}
             </div>
 
-            {/* Bid History placeholder */}
+            {/* Vehicle Specifications */}
+            {(vehicle.body_style || vehicle.engine_type || vehicle.transmission || vehicle.drive_type || vehicle.fuel_type || vehicle.exterior_color || vehicle.interior_color || vehicle.cylinders) && (
+              <div className="p-4 rounded-lg bg-card border border-border">
+                <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Car className="w-4 h-4 text-primary" /> Vehicle Specifications
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: "Body Style", value: vehicle.body_style },
+                    { label: "Exterior Color", value: vehicle.exterior_color },
+                    { label: "Interior Color", value: vehicle.interior_color },
+                    { label: "Engine", value: vehicle.engine_type },
+                    { label: "Transmission", value: vehicle.transmission },
+                    { label: "Drive Type", value: vehicle.drive_type },
+                    { label: "Fuel Type", value: vehicle.fuel_type },
+                    { label: "Cylinders", value: vehicle.cylinders ? String(vehicle.cylinders) : null },
+                  ].filter(s => s.value).map(spec => (
+                    <div key={spec.label} className="py-2 border-b border-border last:border-0">
+                      <p className="text-xs text-muted-foreground">{spec.label}</p>
+                      <p className="text-sm font-semibold text-foreground">{spec.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Title & Damage Info */}
+            {(vehicle.title_status || vehicle.primary_damage || vehicle.keys_available !== undefined || (vehicle.highlights && vehicle.highlights.length > 0)) && (
+              <div className="p-4 rounded-lg bg-card border border-border">
+                <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <Hash className="w-4 h-4 text-primary" /> Title & Damage Information
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { label: "Title Status", value: vehicle.title_status },
+                    { label: "Primary Damage", value: vehicle.primary_damage },
+                    { label: "Secondary Damage", value: vehicle.secondary_damage },
+                    { label: "Keys Available", value: vehicle.keys_available !== null && vehicle.keys_available !== undefined ? (vehicle.keys_available ? "Yes" : "No") : null },
+                  ].filter(s => s.value).map(spec => (
+                    <div key={spec.label} className="py-2 border-b border-border last:border-0">
+                      <p className="text-xs text-muted-foreground">{spec.label}</p>
+                      <p className="text-sm font-semibold text-foreground">{spec.value}</p>
+                    </div>
+                  ))}
+                </div>
+                {vehicle.highlights && vehicle.highlights.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {vehicle.highlights.map(h => (
+                      <Badge key={h} variant="secondary">{h}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="p-4 rounded-lg bg-card border border-border">
               <h3 className="font-display font-semibold text-foreground mb-3">Bid History</h3>
               <div className="space-y-2">

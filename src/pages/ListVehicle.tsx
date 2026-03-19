@@ -30,6 +30,7 @@ import {
   Play,
   Pause,
   Square,
+  Hash,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -61,6 +62,19 @@ const ListVehicle = () => {
     location: "",
     description: "",
     reserve_price: 0,
+    body_style: "",
+    exterior_color: "",
+    interior_color: "",
+    engine_type: "",
+    transmission: "",
+    drive_type: "",
+    fuel_type: "",
+    cylinders: "",
+    title_status: "",
+    primary_damage: "",
+    secondary_damage: "",
+    keys_available: true,
+    highlights: [] as string[],
   });
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -115,6 +129,19 @@ const ListVehicle = () => {
         location: data.location || "",
         description: data.description || "",
         reserve_price: data.reserve_price ? Number(data.reserve_price) : 0,
+        body_style: (data as any).body_style || "",
+        exterior_color: (data as any).exterior_color || "",
+        interior_color: (data as any).interior_color || "",
+        engine_type: (data as any).engine_type || "",
+        transmission: (data as any).transmission || "",
+        drive_type: (data as any).drive_type || "",
+        fuel_type: (data as any).fuel_type || "",
+        cylinders: (data as any).cylinders ? String((data as any).cylinders) : "",
+        title_status: (data as any).title_status || "",
+        primary_damage: (data as any).primary_damage || "",
+        secondary_damage: (data as any).secondary_damage || "",
+        keys_available: (data as any).keys_available !== false,
+        highlights: (data as any).highlights || [],
       });
       setExistingImageUrls(data.images || []);
       setExistingVideoUrls(data.videos || []);
@@ -304,7 +331,20 @@ const ListVehicle = () => {
         ai_condition_score: aiAnalysis?.condition_score || null,
         ai_repair_cost: aiAnalysis?.repair_cost || null,
         ai_profit_potential: aiAnalysis?.profit_potential || null,
-      };
+        body_style: form.body_style || null,
+        exterior_color: form.exterior_color || null,
+        interior_color: form.interior_color || null,
+        engine_type: form.engine_type || null,
+        transmission: form.transmission || null,
+        drive_type: form.drive_type || null,
+        fuel_type: form.fuel_type || null,
+        cylinders: form.cylinders ? Number(form.cylinders) : null,
+        title_status: form.title_status || null,
+        primary_damage: form.primary_damage || null,
+        secondary_damage: form.secondary_damage || null,
+        keys_available: form.keys_available,
+        highlights: form.highlights.length > 0 ? form.highlights : null,
+      } as any;
 
       if (isEditMode && editId) {
         // Update existing vehicle
@@ -463,6 +503,152 @@ const ListVehicle = () => {
               <div className="space-y-2 sm:col-span-2">
                 <Label>Description</Label>
                 <Textarea placeholder="Describe the vehicle condition, features, history..." value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="bg-secondary border-border min-h-[100px]" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Vehicle Specifications */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Car className="w-5 h-5 text-primary" /> Vehicle Specifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Body Style</Label>
+                <Select value={form.body_style} onValueChange={(v) => setForm({ ...form, body_style: v })}>
+                  <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Select body style" /></SelectTrigger>
+                  <SelectContent>
+                    {["Sedan", "SUV", "Truck", "Coupe", "Convertible", "Van", "Wagon", "Hatchback"].map(v => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Exterior Color</Label>
+                <Input placeholder="e.g. Silver" value={form.exterior_color} onChange={(e) => setForm({ ...form, exterior_color: e.target.value })} className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>Interior Color</Label>
+                <Input placeholder="e.g. Black" value={form.interior_color} onChange={(e) => setForm({ ...form, interior_color: e.target.value })} className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>Engine Type</Label>
+                <Input placeholder="e.g. 2.5L 4-Cylinder" value={form.engine_type} onChange={(e) => setForm({ ...form, engine_type: e.target.value })} className="bg-secondary border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>Transmission</Label>
+                <Select value={form.transmission} onValueChange={(v) => setForm({ ...form, transmission: v })}>
+                  <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Select transmission" /></SelectTrigger>
+                  <SelectContent>
+                    {["Automatic", "Manual", "CVT"].map(v => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Drive Type</Label>
+                <Select value={form.drive_type} onValueChange={(v) => setForm({ ...form, drive_type: v })}>
+                  <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Select drive type" /></SelectTrigger>
+                  <SelectContent>
+                    {["FWD", "RWD", "AWD", "4WD"].map(v => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Fuel Type</Label>
+                <Select value={form.fuel_type} onValueChange={(v) => setForm({ ...form, fuel_type: v })}>
+                  <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Select fuel type" /></SelectTrigger>
+                  <SelectContent>
+                    {["Gasoline", "Diesel", "Hybrid", "Electric", "Plug-in Hybrid"].map(v => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Cylinders</Label>
+                <Select value={form.cylinders} onValueChange={(v) => setForm({ ...form, cylinders: v })}>
+                  <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Select cylinders" /></SelectTrigger>
+                  <SelectContent>
+                    {["3", "4", "5", "6", "8", "10", "12"].map(v => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Title & Damage Information */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Hash className="w-5 h-5 text-primary" /> Title & Damage Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Title Status</Label>
+                <Select value={form.title_status} onValueChange={(v) => setForm({ ...form, title_status: v })}>
+                  <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Select title status" /></SelectTrigger>
+                  <SelectContent>
+                    {["Clean", "Salvage", "Rebuilt", "Flood", "Lemon"].map(v => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Primary Damage</Label>
+                <Select value={form.primary_damage} onValueChange={(v) => setForm({ ...form, primary_damage: v })}>
+                  <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Select primary damage" /></SelectTrigger>
+                  <SelectContent>
+                    {["None", "Front End", "Rear End", "Side", "Rollover", "Vandalism", "Hail", "Flood", "Mechanical"].map(v => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Secondary Damage</Label>
+                <Select value={form.secondary_damage} onValueChange={(v) => setForm({ ...form, secondary_damage: v })}>
+                  <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Select secondary damage" /></SelectTrigger>
+                  <SelectContent>
+                    {["None", "Front End", "Rear End", "Side", "Rollover", "Vandalism", "Hail", "Flood", "Mechanical"].map(v => (
+                      <SelectItem key={v} value={v}>{v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 flex items-center gap-3 pt-6">
+                <Switch id="keys-toggle" checked={form.keys_available} onCheckedChange={(v) => setForm({ ...form, keys_available: v })} />
+                <Label htmlFor="keys-toggle">Keys Available</Label>
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Highlights</Label>
+                <div className="flex flex-wrap gap-2">
+                  {["Run & Drive", "Enhanced Vehicle", "Donation", "Rental", "Government", "Recovered Theft", "Repossession"].map(h => (
+                    <Badge
+                      key={h}
+                      variant={form.highlights.includes(h) ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setForm(prev => ({
+                        ...prev,
+                        highlights: prev.highlights.includes(h)
+                          ? prev.highlights.filter(x => x !== h)
+                          : [...prev.highlights, h],
+                      }))}
+                    >
+                      {h}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

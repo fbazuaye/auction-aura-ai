@@ -60,6 +60,9 @@ const ListVehicle = () => {
     duration_hours: 24,
     live_stream_url: "",
   });
+  const [auctionStatus, setAuctionStatus] = useState<string>("scheduled");
+  const [auctionId, setAuctionId] = useState<string | null>(null);
+  const [statusLoading, setStatusLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchingVehicle, setFetchingVehicle] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);

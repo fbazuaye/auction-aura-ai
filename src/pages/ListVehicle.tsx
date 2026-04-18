@@ -173,6 +173,7 @@ const ListVehicle = () => {
           duration_hours: durationHours || 24,
           live_stream_url: auctionData.live_stream_url || "",
         });
+        setOriginalDurationHours(durationHours || 24);
       }
 
       setFetchingVehicle(false);

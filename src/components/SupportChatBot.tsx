@@ -20,7 +20,7 @@ const QUICK_PROMPTS = [
 const WELCOME: Msg = {
   role: "assistant",
   content:
-    "Hi! I'm AuctionAura AI. How can i assist you today?",
+    "Hi! I'm AutoBidX. How can i assist you today?",
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/support-chat`;
@@ -167,7 +167,7 @@ export default function SupportChatBot() {
                 <Sparkles className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <p className="font-semibold text-sm leading-tight">Ask AuctionAura AI</p>
+                <p className="font-semibold text-sm leading-tight">Ask AutoBidX</p>
                 <p className="text-[10px] text-muted-foreground leading-tight">
                   Platform support · Online
                 </p>

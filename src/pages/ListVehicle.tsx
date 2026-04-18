@@ -95,6 +95,7 @@ const ListVehicle = () => {
   });
   const [auctionStatus, setAuctionStatus] = useState<string>("scheduled");
   const [auctionId, setAuctionId] = useState<string | null>(null);
+  const [originalDurationHours, setOriginalDurationHours] = useState<number>(24);
   const [statusLoading, setStatusLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchingVehicle, setFetchingVehicle] = useState(false);

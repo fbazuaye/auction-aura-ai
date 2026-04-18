@@ -212,9 +212,9 @@ const ListVehicle = () => {
       toast({ title: "Maximum 3 videos allowed", variant: "destructive" });
       return;
     }
-    const oversized = files.find((f) => f.size > 100 * 1024 * 1024);
+    const oversized = files.find((f) => f.size > 200 * 1024 * 1024);
     if (oversized) {
-      toast({ title: "Each video must be under 100MB", variant: "destructive" });
+      toast({ title: "Each video must be under 200MB", variant: "destructive" });
       return;
     }
     setVideos((prev) => [...prev, ...files]);
@@ -808,7 +808,7 @@ const ListVehicle = () => {
                   </label>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">{totalVideos}/3 videos (max 100MB each, mp4/webm)</p>
+              <p className="text-xs text-muted-foreground">{totalVideos}/3 videos (max 200MB each, mp4/webm)</p>
             </CardContent>
           </Card>
 

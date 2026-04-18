@@ -429,16 +429,27 @@ const ListVehicle = () => {
 
         // Update auction settings if auction exists
         if (createAuction) {
+          const auctionUpdatePayload: Record<string, any> = {
+            start_price: auctionSettings.start_price,
+            bid_increment: auctionSettings.bid_increment,
+            reserve_price: form.reserve_price || null,
+            live_stream_url: auctionSettings.live_stream_url || null,
+          };
+          // If admin changed duration, reset auction clock from now
+          if (auctionSettings.duration_hours !== originalDurationHours) {
+            const startsAt = new Date();
+            const endsAt = new Date(startsAt.getTime() + auctionSettings.duration_hours * 3600000);
+            auctionUpdatePayload.starts_at = startsAt.toISOString();
+            auctionUpdatePayload.ends_at = endsAt.toISOString();
+            auctionUpdatePayload.original_end_time = endsAt.toISOString();
+            if (auctionStatus === "ended") auctionUpdatePayload.status = "active";
+          }
           const { error: auctionUpdateError } = await supabase
             .from("auctions")
-            .update({
-              start_price: auctionSettings.start_price,
-              bid_increment: auctionSettings.bid_increment,
-              reserve_price: form.reserve_price || null,
-              live_stream_url: auctionSettings.live_stream_url || null,
-            } as any)
+            .update(auctionUpdatePayload as any)
             .eq("vehicle_id", editId);
           if (auctionUpdateError) throw auctionUpdateError;
+          setOriginalDurationHours(auctionSettings.duration_hours);
         }
 
         toast({ title: "Vehicle updated!", description: "Your listing has been updated successfully." });

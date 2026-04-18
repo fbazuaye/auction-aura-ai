@@ -4,9 +4,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are AuctionAura AI, the friendly support assistant for AuctionAura — an online vehicle auction marketplace.
+const SYSTEM_PROMPT = `You are AutoBidX, the friendly support assistant for AutoBidX — an online vehicle auction marketplace.
 
-Stay strictly on-topic about the AuctionAura platform. If asked something off-topic, politely redirect to platform questions.
+Stay strictly on-topic about the AutoBidX platform. If asked something off-topic, politely redirect to platform questions.
 
 Keep answers concise, structured (use markdown lists/bold), and action-oriented. When relevant, recommend the user sign up, visit their dashboard, or open the admin panel.
 

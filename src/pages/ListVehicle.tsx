@@ -989,6 +989,29 @@ const ListVehicle = () => {
                       </AlertDialog>
                     </>
                   )}
+                  {auctionStatus === "ended" && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button type="button" size="sm" variant="success" disabled={statusLoading}>
+                          <Play className="w-3 h-3 mr-1" /> Restart Auction
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Restart this auction?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            The auction will reopen for bids. The clock resets to <strong>{auctionSettings.duration_hours} hour(s)</strong> from now (using the Duration selected below). Existing bid history is preserved.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleRestartAuction} className="bg-success text-success-foreground hover:bg-success/90">
+                            Restart Auction
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             )}

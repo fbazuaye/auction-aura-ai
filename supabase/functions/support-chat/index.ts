@@ -26,7 +26,7 @@ Keep answers concise, structured (use markdown lists/bold), and action-oriented.
 ### Listing a Vehicle (Sellers)
 1. Go to **Dashboard → "List Vehicle"** (or use Bulk Upload for multiple).
 2. Fill specs: make, model, year, VIN, mileage, condition, body style, drive type, transmission, fuel type, exterior/interior color, primary/secondary damage, title status, keys, location, description, highlights, reserve price.
-3. Upload media: up to **3 videos × 100MB**, multiple photos, optional **live stream URL**.
+3. Upload media: up to **3 videos × 200MB**, multiple photos, optional **live stream URL**.
 4. Upload up to **5 inspection reports × 20MB** (PDFs).
 5. Submit → status becomes **pending** → awaits admin review.
 

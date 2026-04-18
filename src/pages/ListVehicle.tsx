@@ -282,6 +282,32 @@ const ListVehicle = () => {
     }
   };
 
+  const handleRestartAuction = async () => {
+    if (!auctionId) return;
+    setStatusLoading(true);
+    try {
+      const startsAt = new Date();
+      const endsAt = new Date(startsAt.getTime() + auctionSettings.duration_hours * 3600000);
+      const { error } = await supabase
+        .from("auctions")
+        .update({
+          status: "active",
+          starts_at: startsAt.toISOString(),
+          ends_at: endsAt.toISOString(),
+          original_end_time: endsAt.toISOString(),
+          winner_id: null,
+        } as any)
+        .eq("id", auctionId);
+      if (error) throw error;
+      setAuctionStatus("active");
+      toast({ title: "Auction restarted!", description: `New auction runs for ${auctionSettings.duration_hours} hour(s) from now.` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
   const handleAuctionStatusChange = async (newStatus: string) => {
     if (!auctionId) return;
     setStatusLoading(true);

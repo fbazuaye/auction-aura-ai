@@ -95,6 +95,7 @@ const ListVehicle = () => {
   });
   const [auctionStatus, setAuctionStatus] = useState<string>("scheduled");
   const [auctionId, setAuctionId] = useState<string | null>(null);
+  const [originalDurationHours, setOriginalDurationHours] = useState<number>(24);
   const [statusLoading, setStatusLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchingVehicle, setFetchingVehicle] = useState(false);
@@ -172,6 +173,7 @@ const ListVehicle = () => {
           duration_hours: durationHours || 24,
           live_stream_url: auctionData.live_stream_url || "",
         });
+        setOriginalDurationHours(durationHours || 24);
       }
 
       setFetchingVehicle(false);
@@ -279,6 +281,32 @@ const ListVehicle = () => {
       toast({ title: "AI analysis failed", description: err.message, variant: "destructive" });
     } finally {
       setAiLoading(false);
+    }
+  };
+
+  const handleRestartAuction = async () => {
+    if (!auctionId) return;
+    setStatusLoading(true);
+    try {
+      const startsAt = new Date();
+      const endsAt = new Date(startsAt.getTime() + auctionSettings.duration_hours * 3600000);
+      const { error } = await supabase
+        .from("auctions")
+        .update({
+          status: "active",
+          starts_at: startsAt.toISOString(),
+          ends_at: endsAt.toISOString(),
+          original_end_time: endsAt.toISOString(),
+          winner_id: null,
+        } as any)
+        .eq("id", auctionId);
+      if (error) throw error;
+      setAuctionStatus("active");
+      toast({ title: "Auction restarted!", description: `New auction runs for ${auctionSettings.duration_hours} hour(s) from now.` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -401,16 +429,27 @@ const ListVehicle = () => {
 
         // Update auction settings if auction exists
         if (createAuction) {
+          const auctionUpdatePayload: Record<string, any> = {
+            start_price: auctionSettings.start_price,
+            bid_increment: auctionSettings.bid_increment,
+            reserve_price: form.reserve_price || null,
+            live_stream_url: auctionSettings.live_stream_url || null,
+          };
+          // If admin changed duration, reset auction clock from now
+          if (auctionSettings.duration_hours !== originalDurationHours) {
+            const startsAt = new Date();
+            const endsAt = new Date(startsAt.getTime() + auctionSettings.duration_hours * 3600000);
+            auctionUpdatePayload.starts_at = startsAt.toISOString();
+            auctionUpdatePayload.ends_at = endsAt.toISOString();
+            auctionUpdatePayload.original_end_time = endsAt.toISOString();
+            if (auctionStatus === "ended") auctionUpdatePayload.status = "active";
+          }
           const { error: auctionUpdateError } = await supabase
             .from("auctions")
-            .update({
-              start_price: auctionSettings.start_price,
-              bid_increment: auctionSettings.bid_increment,
-              reserve_price: form.reserve_price || null,
-              live_stream_url: auctionSettings.live_stream_url || null,
-            } as any)
+            .update(auctionUpdatePayload as any)
             .eq("vehicle_id", editId);
           if (auctionUpdateError) throw auctionUpdateError;
+          setOriginalDurationHours(auctionSettings.duration_hours);
         }
 
         toast({ title: "Vehicle updated!", description: "Your listing has been updated successfully." });
@@ -950,6 +989,29 @@ const ListVehicle = () => {
                       </AlertDialog>
                     </>
                   )}
+                  {auctionStatus === "ended" && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button type="button" size="sm" variant="success" disabled={statusLoading}>
+                          <Play className="w-3 h-3 mr-1" /> Restart Auction
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Restart this auction?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            The auction will reopen for bids. The clock resets to <strong>{auctionSettings.duration_hours} hour(s)</strong> from now (using the Duration selected below). Existing bid history is preserved.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleRestartAuction} className="bg-success text-success-foreground hover:bg-success/90">
+                            Restart Auction
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             )}
@@ -964,19 +1026,29 @@ const ListVehicle = () => {
                   <Input type="number" min={1} value={auctionSettings.bid_increment} onChange={(e) => setAuctionSettings({ ...auctionSettings, bid_increment: Number(e.target.value) })} className="bg-secondary border-border" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Duration (hours)</Label>
+                  <Label>{isEditMode && auctionId ? "Duration (resets clock from now)" : "Duration"}</Label>
                   <Select value={String(auctionSettings.duration_hours)} onValueChange={(v) => setAuctionSettings({ ...auctionSettings, duration_hours: Number(v) })}>
                     <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">1 hour</SelectItem>
                       <SelectItem value="6">6 hours</SelectItem>
                       <SelectItem value="12">12 hours</SelectItem>
-                      <SelectItem value="24">24 hours</SelectItem>
-                      <SelectItem value="48">48 hours</SelectItem>
-                      <SelectItem value="72">72 hours</SelectItem>
+                      <SelectItem value="24">24 hours (1 day)</SelectItem>
+                      <SelectItem value="48">48 hours (2 days)</SelectItem>
+                      <SelectItem value="72">72 hours (3 days)</SelectItem>
+                      <SelectItem value="120">5 days</SelectItem>
                       <SelectItem value="168">7 days</SelectItem>
+                      <SelectItem value="336">14 days</SelectItem>
+                      <SelectItem value="504">21 days</SelectItem>
+                      <SelectItem value="720">30 days</SelectItem>
+                      <SelectItem value="1080">45 days</SelectItem>
+                      <SelectItem value="1440">60 days</SelectItem>
+                      <SelectItem value="2160">90 days</SelectItem>
                     </SelectContent>
                   </Select>
+                  {isEditMode && auctionId && (
+                    <p className="text-xs text-muted-foreground">Changing this restarts the auction clock from now when you save.</p>
+                  )}
                 </div>
                 <div className="space-y-2 sm:col-span-3">
                   <Label>Live Stream URL (optional)</Label>

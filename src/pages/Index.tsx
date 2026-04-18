@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
+import SupportChatBot from "@/components/SupportChatBot";
 import VehicleCard from "@/components/VehicleCard";
 import SmartSearch from "@/components/SmartSearch";
 import { mockVehicles, type Vehicle } from "@/data/mockVehicles";
@@ -216,6 +217,7 @@ const Index = () => {
       </main>
 
       <Footer />
+      <SupportChatBot />
       <BottomNav />
     </div>
   );

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { MessageCircle, X, Send, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,7 +20,7 @@ const QUICK_PROMPTS = [
 const WELCOME: Msg = {
   role: "assistant",
   content:
-    "👋 Hi! I'm **AuctionAura AI**. Ask me anything about signing up, listing vehicles, bidding, or how auctions work on our platform.",
+    "Hi! I'm AuctionAura AI. How can i assist you today?",
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/support-chat`;
@@ -173,15 +173,27 @@ export default function SupportChatBot() {
                 </p>
               </div>
             </div>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setOpen(false)}
-              aria-label="Close chat"
-              className="h-8 w-8"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setMessages([WELCOME])}
+                aria-label="Clear chat"
+                className="h-8 w-8"
+                title="Clear chat"
+              >
+                <Trash2 className="h-4 w-4 text-muted-foreground" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setOpen(false)}
+                aria-label="Close chat"
+                className="h-8 w-8"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
           {/* Messages */}

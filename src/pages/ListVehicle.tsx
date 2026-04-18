@@ -1026,19 +1026,29 @@ const ListVehicle = () => {
                   <Input type="number" min={1} value={auctionSettings.bid_increment} onChange={(e) => setAuctionSettings({ ...auctionSettings, bid_increment: Number(e.target.value) })} className="bg-secondary border-border" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Duration (hours)</Label>
+                  <Label>{isEditMode && auctionId ? "Duration (resets clock from now)" : "Duration"}</Label>
                   <Select value={String(auctionSettings.duration_hours)} onValueChange={(v) => setAuctionSettings({ ...auctionSettings, duration_hours: Number(v) })}>
                     <SelectTrigger className="bg-secondary border-border"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">1 hour</SelectItem>
                       <SelectItem value="6">6 hours</SelectItem>
                       <SelectItem value="12">12 hours</SelectItem>
-                      <SelectItem value="24">24 hours</SelectItem>
-                      <SelectItem value="48">48 hours</SelectItem>
-                      <SelectItem value="72">72 hours</SelectItem>
+                      <SelectItem value="24">24 hours (1 day)</SelectItem>
+                      <SelectItem value="48">48 hours (2 days)</SelectItem>
+                      <SelectItem value="72">72 hours (3 days)</SelectItem>
+                      <SelectItem value="120">5 days</SelectItem>
                       <SelectItem value="168">7 days</SelectItem>
+                      <SelectItem value="336">14 days</SelectItem>
+                      <SelectItem value="504">21 days</SelectItem>
+                      <SelectItem value="720">30 days</SelectItem>
+                      <SelectItem value="1080">45 days</SelectItem>
+                      <SelectItem value="1440">60 days</SelectItem>
+                      <SelectItem value="2160">90 days</SelectItem>
                     </SelectContent>
                   </Select>
+                  {isEditMode && auctionId && (
+                    <p className="text-xs text-muted-foreground">Changing this restarts the auction clock from now when you save.</p>
+                  )}
                 </div>
                 <div className="space-y-2 sm:col-span-3">
                   <Label>Live Stream URL (optional)</Label>
